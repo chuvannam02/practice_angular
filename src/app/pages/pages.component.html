@@ -1,0 +1,75 @@
+<nz-layout class="app-layout">
+    <nz-sider class="menu-sidebar"
+              nzCollapsible
+              nzWidth="256px"
+              nzBreakpoint="md"
+              [(nzCollapsed)]="isCollapsed"
+              [nzTrigger]="null"
+    >
+        <div class="sidebar-logo">
+            <a href="https://ng.ant.design/" target="_blank">
+                <img src="https://ng.ant.design/assets/img/logo.svg" alt="logo">
+                <h1>Ant Design of Angular</h1>
+            </a>
+        </div>
+        <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
+            <li nz-submenu nzOpen nzTitle="Quản trị hệ thống" nzIcon="dashboard">
+                <ul>
+                    <li nz-menu-item nzMatchRouter>
+                        <a routerLink="/pages/welcome">Welcome</a>
+                    </li>
+                    <li nz-menu-item nzMatchRouter>
+                        <a routerLink="menu">Quản lý chức năng</a>
+                    </li>
+                    <li nz-menu-item nzMatchRouter>
+                        <a>Quản lý quyền</a>
+                    </li>
+                    <li nz-menu-item nzMatchRouter>
+                        <a>Quản lý tài khoản</a>
+                    </li>
+                    <li nz-menu-item nzMatchRouter>
+                        <a>Quản lý đơn vị</a>
+                    </li>
+                    <li nz-menu-item nzMatchRouter>
+                        <a routerLink="/settings">Quản lý tham số hệ thống</a>
+                    </li>
+                    <li nz-menu-item nzMatchRouter>
+                        <a routerLink="/users/group">Quản lý nhóm người dùng</a>
+                    </li>
+                    <li nz-menu-item nzMatchRouter>
+                        <a routerLink="/audit/login">Lịch sử đăng nhập</a>
+                    </li>
+                    <li nz-menu-item nzMatchRouter>
+                        <a routerLink="/logs">Log hệ thống</a>
+                    </li>
+                </ul>
+            </li>
+            <li nz-submenu nzOpen nzTitle="Form" nzIcon="form">
+                <ul>
+                    <li nz-menu-item nzMatchRouter>
+                        <a>Basic Form</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nz-sider>
+    <nz-layout>
+        <nz-header>
+            <div class="app-header">
+        <span class="header-trigger" (click)="isCollapsed = !isCollapsed">
+          <nz-icon class="trigger" [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"/>
+        </span>
+            </div>
+        </nz-header>
+        <nz-content>
+            <div class="inner-content">
+                <nz-breadcrumb [nzAutoGenerate]="true">
+                    <nz-breadcrumb-item>
+                        <a routerLink="/home">Trang chủ</a>
+                    </nz-breadcrumb-item>
+                </nz-breadcrumb>
+                <router-outlet></router-outlet>
+            </div>
+        </nz-content>
+    </nz-layout>
+</nz-layout>
