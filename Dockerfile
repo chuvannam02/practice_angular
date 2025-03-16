@@ -2,16 +2,17 @@
 FROM node:18-alpine AS build
 WORKDIR /app
 
-# Copy file package.json và package-lock.json (nếu có) để tận dụng cache cài đặt npm
+# Copy file package.json và package-lock.json để tận dụng cache cài đặt npm
 COPY package*.json ./
 RUN npm ci
 
 # Copy toàn bộ source code và build ứng dụng
 COPY . .
-RUN npm run build
+# Nếu bạn đã cấu hình production build (ví dụ: "ng build --configuration production") thì chạy như sau:
+RUN npm run build -- --configuration production
 
-# Stage 2: Production với Nginx
-FROM nginx
+# Stage 2: Production với Nginx (sử dụng image alpine để giảm kích thước)
+FROM nginx:alpine
 
 # Xóa nội dung mặc định của Nginx
 RUN rm -rf /usr/share/nginx/html/*
