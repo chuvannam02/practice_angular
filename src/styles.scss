@@ -1,1 +1,24 @@
 /* You can add global styles to this file, and also import other style files */
+.groups_buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.ant-btn{
+    border-radius: 6px;
+    padding: 10px 20px;
+    text-align: center;
+    height: auto;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.results {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}

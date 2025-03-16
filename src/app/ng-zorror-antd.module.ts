@@ -21,6 +21,9 @@ import {NzTreeViewModule} from 'ng-zorro-antd/tree-view';
 import {NzLayoutModule} from 'ng-zorro-antd/layout';
 import {NzCollapseModule} from 'ng-zorro-antd/collapse';
 import {NzMenuModule} from 'ng-zorro-antd/menu';
+import {NzFormModule} from 'ng-zorro-antd/form';
+import {NzDividerModule} from 'ng-zorro-antd/divider';
+import {NzEmptyModule} from 'ng-zorro-antd/empty';
 
 @NgModule({
     imports: [
@@ -38,7 +41,10 @@ import {NzMenuModule} from 'ng-zorro-antd/menu';
         NzTreeModule,
         NzLayoutModule,
         NzCollapseModule,
-        NzMenuModule
+        NzMenuModule,
+        NzFormModule,
+        NzDividerModule,
+        NzEmptyModule,
     ],
     exports: [
         NzButtonModule,
@@ -55,7 +61,10 @@ import {NzMenuModule} from 'ng-zorro-antd/menu';
         NzTreeModule,
         NzLayoutModule,
         NzCollapseModule,
-        NzMenuModule
+        NzMenuModule,
+        NzFormModule,
+        NzDividerModule,
+        NzEmptyModule,
     ]
 })
 export class ModuleShare {
