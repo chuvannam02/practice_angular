@@ -1,7 +1,5 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {DynamicRendererComponent} from './dynamic-renderer/dynamic-renderer.component';
-import {WelcomeComponent} from './welcome/welcome.component';
 import {PagesComponent} from './pages.component';
 
 const routes: Routes = [

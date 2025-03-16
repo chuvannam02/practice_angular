@@ -2,7 +2,7 @@ import {Directive, ElementRef, HostListener} from '@angular/core';
 import {NgControl} from '@angular/forms';
 
 @Directive({
-    selector: '[trim]'
+    selector: '[appTrim]'
 })
 export class TrimDirective {
 

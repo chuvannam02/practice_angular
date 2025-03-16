@@ -1,4 +1,5 @@
 import {Component} from '@angular/core';
+import {NzModalService} from 'ng-zorro-antd/modal';
 
 @Component({
     selector: 'app-welcome',
@@ -7,6 +8,6 @@ import {Component} from '@angular/core';
     standalone: false
 })
 export class WelcomeComponent {
-    constructor() {
+    constructor(private readonly nzModalService: NzModalService) {
     }
 }
