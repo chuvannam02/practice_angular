@@ -1,1 +1,70 @@
-<p>list-menu works!</p>
+<form nz-form [formGroup]="searchForm">
+    <nz-form-item>
+        <nz-form-label [nzSpan]="3" nzRequired>Username</nz-form-label>
+        <nz-form-control [nzSpan]="9" nzHasFeedback [nzValidateStatus]="searchForm.get('name')!"
+                         nzValidatingTip="Validating..." [nzErrorTip]="userErrorTpl">
+            <input nz-input id="name" formControlName="name" placeholder="async validate try to write JasonWood" trim/>
+            <ng-template #userErrorTpl let-control>
+                @if (control.errors?.['required']) {
+                    Please input your keySearch!
+                }
+                @if (control.errors?.['duplicated']) {
+                    The keySearch is redundant!
+                }
+            </ng-template>
+        </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+        <nz-form-label [nzSpan]="3" nzRequired>Username</nz-form-label>
+        <nz-form-control [nzSpan]="9" nzHasFeedback [nzValidateStatus]="searchForm.get('code')!"
+                         nzValidatingTip="Validating..." [nzErrorTip]="userErrorTpl">
+            <input nz-input id="code" formControlName="code" placeholder="async validate try to write JasonWood" trim/>
+            <ng-template #userErrorTpl let-control>
+                @if (control.errors?.['required']) {
+                    Please input your keySearch!
+                }
+                @if (control.errors?.['duplicated']) {
+                    The keySearch is redundant!
+                }
+            </ng-template>
+        </nz-form-control>
+    </nz-form-item>
+</form>
+
+<div class="groups_buttons">
+    <button nz-button nzType="primary" (click)="search()">Search</button>
+    <button nz-button nzType="default" (click)="reset($event)">Reset</button>
+</div>
+<nz-divider></nz-divider>
+<div class="results">
+    <h3>Kết quả tìm kiếm</h3>
+    <button nz-button nzType="default" (click)="showModal()">
+        Thêm mới
+    </button>
+</div>
+<nz-table #table [nzData]="data" [nzLoading]="loading" [nzPageIndex]="1" [nzPageSize]="10" nzShowQuickJumper
+          nzShowSizeChanger [nzNoResult]="emptyResult" [nzPageSizeOptions]="pageSizeOptions">
+    <thead>
+    <tr>
+        <th nzWidth="20%">Name</th>
+        <th nzWidth="20%">Description</th>
+        <th nzWidth="20%">Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let item of table.data; let i = index; trackBy: trackByFn">
+        <td>{{ item.name }}</td>
+        <td>{{ item.description }}</td>
+        <td>
+            <button nz-button nzType="primary" (click)="edit(item)">Edit</button>
+            <button nz-button nzType="default" (click)="delete(item)">Delete</button>
+        </td>
+    </tr>
+    </tbody>
+</nz-table>
+
+<ng-template #emptyResult>
+    <nz-empty [nzNotFoundContent]="'Không tìm thấy dữ liệu phù hợp'"></nz-empty>
+    `
+</ng-template>
+
