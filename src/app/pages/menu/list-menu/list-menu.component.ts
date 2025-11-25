@@ -17,7 +17,7 @@ import {AddEditMenuComponent} from '../add-edit-menu/add-edit-menu.component';
     styleUrl: './list-menu.component.scss',
     standalone: false
 })
-export class ListMenuComponent implements OnInit, OnDestroy  {
+export class ListMenuComponent implements OnInit, OnDestroy {
     searchForm: FormGroup = new FormGroup({});
     private readonly fb = inject(NonNullableFormBuilder);
     private destroy$ = new Subject<void>();
@@ -26,10 +26,10 @@ export class ListMenuComponent implements OnInit, OnDestroy  {
     pageSizeOptions: number[] = [10, 20, 30, 40, 50];
 
     constructor(private readonly nzModalService: NzModalService) {
-        this.initForm();
     }
 
     ngOnInit() {
+        this.initForm();
     }
 
     ngOnDestroy(): void {
@@ -49,6 +49,7 @@ export class ListMenuComponent implements OnInit, OnDestroy  {
             }),
         })
     }
+
     // Sử dụng [nzValidateStatus]="searchForm.get('keySearch')!" để đảm bảo rằng control luôn có giá trị (sử dụng non-null assertion).
     // Sử dụng [nzHasFeedback]="true" để hiển thị icon feedback.
     // Sử dụng [nzErrorTip]="{required: 'This field is required', error: 'This field is duplicated'}" để hiển thị thông báo lỗi.
@@ -84,7 +85,7 @@ export class ListMenuComponent implements OnInit, OnDestroy  {
     userNameAsyncValidator(control: AbstractControl): Observable<ValidationErrors | null> {
         return new Observable(observer => {
             setTimeout(() => {
-                observer.next(control.value === 'JasonWood' ? { error: true, duplicated: true } : null);
+                observer.next(control.value === 'JasonWood' ? {error: true, duplicated: true} : null);
                 observer.complete();
             }, 1000);
         });
@@ -121,7 +122,7 @@ export class ListMenuComponent implements OnInit, OnDestroy  {
                                 const abstractControl = control as AbstractControl;
                                 if (abstractControl.invalid) {
                                     abstractControl.markAsDirty();
-                                    abstractControl.updateValueAndValidity({ onlySelf: true });
+                                    abstractControl.updateValueAndValidity({onlySelf: true});
                                 }
                             });
                         }
