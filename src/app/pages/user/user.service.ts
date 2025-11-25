@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, timer, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
+import {User} from './user.schema';
 
 @Injectable({
     providedIn: 'root'
 })
 export class UserService {
 
-    constructor(private readonly httpClient: HttpClient) {
+    constructor(private readonly http: HttpClient) {
     }
 
     // ============================================================
@@ -65,4 +66,18 @@ export class UserService {
         return this.httpClient.post(`/api/users/${id}/reset-password`, {});
     }
     */
+
+    // Signature 1: Truyền 1 ID -> Trả về 1 User (chắc chắn)
+    getUser(id: string): Observable<User>;
+
+    // Signature 2: Truyền mảng ID -> Trả về mảng User (chắc chắn)
+    getUser(ids: string[]): Observable<User[]>;
+
+    // Implementation (Phần thực thi - gom tất cả logic lại)
+    getUser(idOrIds: string | string[]): Observable<User | User[]> {
+        if (Array.isArray(idOrIds)) {
+            return this.http.get<User[]>('/api/users', { params: { ids: idOrIds } });
+        }
+        return this.http.get<User>(`/api/users/${idOrIds}`);
+    }
 }

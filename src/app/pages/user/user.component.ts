@@ -40,6 +40,16 @@ export class UserComponent implements OnInit {
 
     submit() {
         console.log('Submit form:', formatDate("2024-01-01T00:00:00Z", "YYYY-MM-DD"));
+        // --- Khi sử dụng (Type Inference cực thông minh) ---
+        this.userService.getUser('123').subscribe(u => {
+            console.log(u.email); // TS biết ngay 'u' là Object User, gợi ý code chuẩn
+        });
+
+        this.userService.getUser(['1', '2']).subscribe(users => {
+            users.forEach(u => {
+                console.log(u.name); // TS biết ngay 'u' là Object User, gợi ý code chuẩn
+            }); // TS biết ngay 'users' là Array, cho phép dùng .forEach
+        });
         if (this.form.invalid) {
             // QUAN TRỌNG: Đánh dấu tất cả các field là "đã touch" để kích hoạt hiển thị lỗi
             Object.values(this.form.controls).forEach((control: any) => {
