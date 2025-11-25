@@ -27,6 +27,14 @@ const routes: Routes = [
                     title: 'Quản lý chức năng',
                     breadcrumb: 'Quản lý chức năng'
                 }
+            },
+            {
+                path: 'user',
+                loadChildren: () => import('./user/user.module').then(m => m.UserModule),
+                data: {
+                    title: 'Quản lý người dùng',
+                    breadcrumb: 'Quản lý người dùng'
+                }
             }
         ]
     }
