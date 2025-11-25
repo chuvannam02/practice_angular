@@ -1,0 +1,18 @@
+<!--<form [formGroup]="form" (ngSubmit)="save()">-->
+<!--    <div *ngFor="let key of keys">-->
+<!--        <label>{{ key }}</label>-->
+<!--        <input [formControlName]="key" />-->
+<!--    </div>-->
+<!--    <button type="submit">Save</button>-->
+<!--</form>-->
+
+<form [formGroup]="form" (ngSubmit)="save()">
+    <div *ngFor="let key of keys">
+        <label>{{ key }}</label>
+        <input [formControlName]="key" />
+        <div class="error" *ngIf="form.controls[key].invalid && form.controls[key].touched">
+            {{ getError(key) }}
+        </div>
+    </div>
+    <button type="submit" [disabled]="form.invalid">Lưu</button>
+</form>
