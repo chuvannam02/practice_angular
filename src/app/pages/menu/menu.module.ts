@@ -5,7 +5,7 @@ import {MenuRoutingModule} from './menu-routing.module';
 import {ModuleShare} from '../../ng-zorror-antd.module';
 import {ListMenuComponent} from './list-menu/list-menu.component';
 import {ReactiveFormsModule} from '@angular/forms';
-import {DirectiveModule} from '../../../utils/directive/directive.module';
+import {DirectiveModule} from '../../_utils/directive/directive.module';
 
 
 @NgModule({
