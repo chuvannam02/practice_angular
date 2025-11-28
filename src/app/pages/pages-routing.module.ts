@@ -35,6 +35,14 @@ const routes: Routes = [
                     title: 'Quản lý người dùng',
                     breadcrumb: 'Quản lý người dùng'
                 }
+            },
+            {
+                path: 'category',
+                loadChildren: () => import('./category/category.module').then(m => m.CategoryModule),
+                data: {
+                    title: 'Quản lý danh mục',
+                    breadcrumb: 'Quản lý danh mục'
+                }
             }
         ]
     }

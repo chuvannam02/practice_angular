@@ -1,0 +1,27 @@
+<form [formGroup]="searchForm" (ngSubmit)="search()">
+
+    <!-- TÊN -->
+    <div class="form-group">
+        <label>Tên:</label>
+        <input formControlName="name" placeholder="Tên" appTrim />
+    </div>
+
+    <!-- EMAIL -->
+    <div class="form-group">
+        <label>Email:</label>
+        <input formControlName="email" placeholder="Email" appTrim />
+    </div>
+
+    <!-- TUỔI -->
+    <div class="form-group">
+        <label>Tuổi:</label>
+        <input type="number" formControlName="age" placeholder="Tuổi" appTrim/>
+    </div>
+
+    <button type="submit">Gửi</button>
+
+    <!-- Debug -->
+    <pre>Valid: {{ searchForm.valid }}</pre>
+    <!--    <button type="submit" [disabled]="searchForm?.invalid">Gửi</button>-->
+    <!--    <button type="submit">Gửi</button>-->
+</form>
