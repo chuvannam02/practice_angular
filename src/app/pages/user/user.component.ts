@@ -18,6 +18,7 @@ export class UserComponent implements OnInit {
     // Lúc này this.fb đã sẵn sàng để dùng ngay tại đây
     form = this.fb.group({});
     // Constructor không cần tham số nữa (trừ khi có cái khác)
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     constructor() {}
 
     // form: FormGroup | undefined;

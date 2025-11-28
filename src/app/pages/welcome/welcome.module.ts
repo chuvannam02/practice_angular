@@ -5,7 +5,6 @@ import {WelcomeRoutingModule} from './welcome-routing.module';
 import {ModuleShare} from '../../ng-zorror-antd.module';
 import {WelcomeComponent} from './welcome.component';
 
-
 @NgModule({
     declarations: [WelcomeComponent],
     exports: [WelcomeComponent],

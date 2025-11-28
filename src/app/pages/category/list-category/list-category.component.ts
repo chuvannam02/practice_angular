@@ -5,20 +5,28 @@ import {NzModalRef} from 'ng-zorro-antd/modal';
 import {FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TrimDirective} from '../../../_utils/directive/trim.directive';
 import {HttpClient} from '@angular/common/http';
-import {delay, tap} from 'rxjs';
+import {catchError, delay, Observable, of, tap} from 'rxjs';
+import {ApiService} from '../../../_utils/common/services/api.service';
+import {AsyncPipe} from '@angular/common';
+import { ApiResponseClass } from '../../../_utils/Response.model';
+import {User} from '../../user/user.schema';
+import {map} from 'rxjs/operators';
 
 @Component({
   selector: 'app-list-category',
     imports: [
         FormsModule,
         ReactiveFormsModule,
-        TrimDirective
+        TrimDirective,
+        AsyncPipe
     ],
   templateUrl: './list-category.component.html',
   styleUrl: './list-category.component.scss'
 })
 export class ListCategoryComponent extends BaseListComponent<ICategoryOptional> {
     private readonly http = inject(HttpClient); // <--- Inject HttpClient
+    // constructor(private apiService: ApiService) {}
+    private readonly apiService = inject(ApiService);
 
     constructor() {
         super();
@@ -92,5 +100,36 @@ export class ListCategoryComponent extends BaseListComponent<ICategoryOptional> 
         } finally {
             this.isLoading = false;
         }
+    }
+
+    // Lấy stream từ Getter của Service
+    progress$ = this.apiService.uploadProgress$;
+
+    onFileSelected(file: File) {
+        this.apiService.uploadWithProgress('/api/upload', file).subscribe({
+            next: (res) => {
+                if (res) console.log('Upload xong:', res);
+            }
+        });
+    }
+
+    // Trong Service
+    getUser(): Observable<ApiResponseClass<User> | ApiResponseClass<null>> {
+        return this.http.get<User>('/api/user').pipe(
+            map(data => {
+                console.log("CLick !!!");
+                console.log("data: ", ApiResponseClass.success(data));
+                return ApiResponseClass.success(data);
+            }),
+            catchError(err => {
+                // ❌ LỖI CŨ: Không truyền <User>, TS hiểu là <unknown>
+                // return of(ApiResponseClass.error(err.message));
+
+                // ✅ SỬA: Truyền <User> vào để TS hiểu "Lỗi này thuộc về kiểu User"
+                // Lúc này data sẽ là null, nhưng type vỏ bọc vẫn là ApiResponseClass<User>
+                console.log('error: ', ApiResponseClass.error<User>(err.message))
+                return of(ApiResponseClass.error<User>(err.message));
+            })
+        );
     }
 }

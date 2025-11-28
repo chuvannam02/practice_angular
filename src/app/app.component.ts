@@ -8,7 +8,10 @@ import {RouterOutlet} from '@angular/router';
     styleUrl: './app.component.scss'
 })
 export class AppComponent {
-    title(title: any) {
-        throw new Error('Method not implemented.');
-    }
+    // 1. Sửa lỗi cú pháp dòng titleService (nếu bạn chưa dùng thì xóa hoặc comment lại)
+    // private readonly titleService: Title;
+
+    // 2. Sửa 'title' thành một thuộc tính (biến) thay vì hàm
+    // Giá trị gán vào phải khớp với cái tên project bạn đặt lúc tạo (ví dụ: 'practice_angular')
+    title = 'practice_angular';
 }

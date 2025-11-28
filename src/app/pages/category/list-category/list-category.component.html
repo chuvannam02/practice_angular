@@ -3,13 +3,13 @@
     <!-- TÊN -->
     <div class="form-group">
         <label>Tên:</label>
-        <input formControlName="name" placeholder="Tên" appTrim />
+        <input formControlName="name" placeholder="Tên" appTrim/>
     </div>
 
     <!-- EMAIL -->
     <div class="form-group">
         <label>Email:</label>
-        <input formControlName="email" placeholder="Email" appTrim />
+        <input formControlName="email" placeholder="Email" appTrim/>
     </div>
 
     <!-- TUỔI -->
@@ -25,3 +25,14 @@
     <!--    <button type="submit" [disabled]="searchForm?.invalid">Gửi</button>-->
     <!--    <button type="submit">Gửi</button>-->
 </form>
+
+@if (progress$ | async; as percent) {
+    @if (percent > 0) {
+        <div class="progress-bar">
+            <div [style.width.%]="percent">Uploading {{ percent }}%</div>
+        </div>
+    }
+}
+
+<div></div>
+<button (click)="getUser()">Click Me!</button>
