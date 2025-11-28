@@ -1,4 +1,5 @@
 import {isDevMode} from '@angular/core';
+import {Observable, tap} from 'rxjs';
 
 /**
  * @Project: practice_angular
@@ -14,29 +15,42 @@ export function LogApi() {
         const originalMethod = descriptor.value;
 
         descriptor.value = function (...args: any[]) {
-
-            // 1. Kiểm tra: Nếu KHÔNG phải Dev Mode thì chạy hàm gốc ngay, bỏ qua đoạn log bên dưới
+            // 1. Nếu không phải Dev mode -> chạy hàm gốc luôn, không log gì cả
             if (!isDevMode()) {
                 return originalMethod.apply(this, args);
             }
 
-            // --- Logic Log (Chỉ chạy khi ở môi trường Dev) ---
-            const url = args[0];
-            const paramsOrBody = args[1]; // Tham số thứ 2 thường là params hoặc body
-
-            console.groupCollapsed(`🌐 API Call: [${propertyKey.toUpperCase()}]`); // Dùng groupCollapsed cho gọn
-            console.log('🔗 URL:', url);
-
-            if (paramsOrBody) {
-                console.log('📦 Body/Params:', paramsOrBody);
-            }
-
-            // Lưu ý: args ở đây là tham số ĐẦU VÀO, không phải response trả về
-            console.log("📥 Arguments:", args);
+            // 2. Log thông tin REQUEST (Input)
+            console.groupCollapsed(`🚀 API Request: [${propertyKey.toUpperCase()}]`);
+            console.log('🔗 URL:', args[0]);
+            if (args[1]) console.log('📦 Params/Body:', args[1]);
             console.groupEnd();
 
-            // Gọi hàm gốc
-            return originalMethod.apply(this, args);
+            // 3. Gọi hàm gốc và lấy kết quả (là một Observable)
+            const result$ = originalMethod.apply(this, args);
+
+            // 4. Kiểm tra xem kết quả có phải là Observable không để dùng .pipe()
+            if (result$ instanceof Observable) {
+                return result$.pipe(
+                    tap({
+                        next: (response: any) => {
+                            // Log khi API trả về thành công
+                            console.groupCollapsed(`✅ API Response: [${propertyKey.toUpperCase()}]`);
+                            console.log('DATA:', response);
+                            console.groupEnd();
+                        },
+                        error: (error: any) => {
+                            // Log khi API bị lỗi
+                            console.groupCollapsed(`❌ API Error: [${propertyKey.toUpperCase()}]`);
+                            console.error('ERROR:', error);
+                            console.groupEnd();
+                        }
+                    })
+                );
+            }
+
+            // Trường hợp hàm không trả về Observable (ít gặp trong HttpClient nhưng vẫn nên handle)
+            return result$;
         };
 
         return descriptor;
