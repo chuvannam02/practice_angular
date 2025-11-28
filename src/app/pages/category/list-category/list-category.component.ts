@@ -8,7 +8,7 @@ import {HttpClient} from '@angular/common/http';
 import {catchError, delay, Observable, of, tap} from 'rxjs';
 import {ApiService} from '../../../_utils/common/services/api.service';
 import {AsyncPipe} from '@angular/common';
-import { ApiResponseClass } from '../../../_utils/Response.model';
+import {ApiResponse, ApiResponseClass} from '../../../_utils/Response.model';
 import {User} from '../../user/user.schema';
 import {map} from 'rxjs/operators';
 
@@ -24,6 +24,7 @@ import {map} from 'rxjs/operators';
   styleUrl: './list-category.component.scss'
 })
 export class ListCategoryComponent extends BaseListComponent<ICategoryOptional> {
+    posts: any[] | null = [];
     private readonly http = inject(HttpClient); // <--- Inject HttpClient
     // constructor(private apiService: ApiService) {}
     private readonly apiService = inject(ApiService);
@@ -47,6 +48,7 @@ export class ListCategoryComponent extends BaseListComponent<ICategoryOptional> 
     }
 
     ngOnInit(): Promise<void> | void {
+        this.loadPosts();
         return undefined;
     }
 
@@ -131,5 +133,15 @@ export class ListCategoryComponent extends BaseListComponent<ICategoryOptional> 
                 return of(ApiResponseClass.error<User>(err.message));
             })
         );
+    }
+
+    loadPosts() {
+        this.isLoading = true;
+        // Gọi method get overload mà bạn đã định nghĩa
+        this.apiService.get<any[]>('https://jsonplaceholder.typicode.com/posts')
+            .subscribe((response: ApiResponse<any[]>) => {
+                this.posts = response.data;
+                this.isLoading = false;
+            });
     }
 }

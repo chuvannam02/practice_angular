@@ -53,6 +53,7 @@ export class ApiService {
     // POST Overloads
     post<T>(url: string): Observable<ApiResponse<T>>; // Post không body
     post<T, V>(url: string, body: V): Observable<ApiResponse<T>>; // Post có body
+    post<T>(url: string, body: any): Observable<ApiResponse<T>>; // Post có body
     @LogApi()
     post<T, V>(url: string, body?: V): Observable<ApiResponse<T>> {
         return this.http.post<ApiResponse<T>>(url, body);

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {Product, productRules} from './product.model';
 import {createFormGroup} from '../../_utils/common/form-utils';
 import {ApiService} from '../../_utils/common/services/api.service';
@@ -12,14 +12,11 @@ import {ReactiveFormsModule} from '@angular/forms';
     templateUrl: './product.component.html',
     styleUrl: './product.component.scss'
 })
-export class ProductComponent implements OnInit {
+export class ProductComponent  {
     form = createFormGroup<Product>({id: 1, name: '', price: 0, stock: 0});
     keys = Object.keys(this.form.controls);
 
     constructor(private api: ApiService) {
-    }
-
-    ngOnInit() {
     }
 
     getError(key: string): string {

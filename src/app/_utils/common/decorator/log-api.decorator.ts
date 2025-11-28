@@ -1,3 +1,5 @@
+import {isDevMode} from '@angular/core';
+
 /**
  * @Project: practice_angular
  * @Author: CHUNAM
@@ -12,14 +14,28 @@ export function LogApi() {
         const originalMethod = descriptor.value;
 
         descriptor.value = function (...args: any[]) {
-            const url = args[0];
-            const body = args[1]; // Thường body là tham số thứ 2
 
-            console.group(`🌐 API Call: [${propertyKey.toUpperCase()}]`);
-            console.log('URL:', url);
-            if (body) console.log('Body:', body);
+            // 1. Kiểm tra: Nếu KHÔNG phải Dev Mode thì chạy hàm gốc ngay, bỏ qua đoạn log bên dưới
+            if (!isDevMode()) {
+                return originalMethod.apply(this, args);
+            }
+
+            // --- Logic Log (Chỉ chạy khi ở môi trường Dev) ---
+            const url = args[0];
+            const paramsOrBody = args[1]; // Tham số thứ 2 thường là params hoặc body
+
+            console.groupCollapsed(`🌐 API Call: [${propertyKey.toUpperCase()}]`); // Dùng groupCollapsed cho gọn
+            console.log('🔗 URL:', url);
+
+            if (paramsOrBody) {
+                console.log('📦 Body/Params:', paramsOrBody);
+            }
+
+            // Lưu ý: args ở đây là tham số ĐẦU VÀO, không phải response trả về
+            console.log("📥 Arguments:", args);
             console.groupEnd();
 
+            // Gọi hàm gốc
             return originalMethod.apply(this, args);
         };
 
