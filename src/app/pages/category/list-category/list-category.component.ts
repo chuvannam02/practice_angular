@@ -11,6 +11,7 @@ import {AsyncPipe} from '@angular/common';
 import {ApiResponse, ApiResponseClass} from '../../../_utils/Response.model';
 import {User} from '../../user/user.schema';
 import {map} from 'rxjs/operators';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-list-category',
@@ -137,8 +138,10 @@ export class ListCategoryComponent extends BaseListComponent<ICategoryOptional> 
 
     loadPosts() {
         this.isLoading = true;
+
         // Gọi method get overload mà bạn đã định nghĩa
         this.apiService.get<any[]>('https://jsonplaceholder.typicode.com/posts')
+            .pipe(this.autoUnsubscribe())
             .subscribe((response: ApiResponse<any[]>) => {
                 this.posts = response.data;
                 this.isLoading = false;
