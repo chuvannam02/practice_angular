@@ -43,6 +43,14 @@ const routes: Routes = [
                     title: 'Quản lý danh mục',
                     breadcrumb: 'Quản lý danh mục'
                 }
+            },
+            {
+                path: 'log',
+                loadChildren: () => import('./log/log.module').then(m => m.LogModule),
+                data: {
+                    title: 'Quản lý nhật ký',
+                    breadcrumb: 'Quản lý nhật ký'
+                }
             }
         ]
     }
