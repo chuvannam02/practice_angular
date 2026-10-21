@@ -1,5 +1,6 @@
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { NgZone } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { NzSelectComponent } from 'ng-zorro-antd/select';
@@ -207,6 +208,81 @@ describe('AppComponent', () => {
         expect(component.categories[component.categories.length - 1].id).toBe(40);
         expect(new Set(component.categories.map((item) => item.id)).size).toBe(40);
         expect(component.isLoadingMore).toBeFalse();
+    }));
+
+    it('immediately shows a visible footer when jumping to the bottom without scrolling back up', fakeAsync(() => {
+        openDropdown();
+        tick(700);
+        render();
+        const viewport = overlay.querySelector<HTMLElement>(
+            'cdk-virtual-scroll-viewport',
+        )!;
+        expect(viewport.scrollHeight).toBeGreaterThan(viewport.clientHeight);
+
+        const scrollToBottom = () => {
+            TestBed.inject(NgZone).runOutsideAngular(() => {
+                viewport.scrollTop = viewport.scrollHeight;
+                viewport.dispatchEvent(new Event('scroll'));
+            });
+        };
+
+        scrollToBottom();
+        expect(component.isLoadingMore).toBeTrue();
+        render();
+
+        const loading = overlay.querySelector<HTMLElement>('[role="status"]')!;
+        expect(loading.textContent).toContain('Đang tải thêm');
+        expect(viewport.contains(loading)).toBeFalse();
+        expect(loading.getBoundingClientRect().height).toBeGreaterThan(0);
+        expect(loading.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+            viewport.getBoundingClientRect().bottom - 1,
+        );
+        expect(select.nzLoading).toBeTrue();
+
+        scrollToBottom();
+        tick(700);
+        render();
+        expect(component.categories.length).toBe(40);
+        expect(component.isLoadingMore).toBeFalse();
+        expect(overlay.querySelector('[role="status"]')).toBeNull();
+        expect(select.nzLoading).toBeFalse();
+
+        scrollToBottom();
+        expect(component.isLoadingMore).toBeTrue();
+        render();
+        expect(overlay.querySelector('[role="status"]')?.textContent).toContain(
+            'Đang tải thêm',
+        );
+        tick(700);
+        render();
+        expect(component.categories.length).toBe(60);
+    }));
+
+    it('stops loading when scrolling at the end of all records', fakeAsync(() => {
+        openDropdown();
+        tick(700);
+        render();
+        const viewport = overlay.querySelector<HTMLElement>(
+            'cdk-virtual-scroll-viewport',
+        )!;
+
+        for (let page = 0; page < 6; page++) {
+            viewport.scrollTop = viewport.scrollHeight;
+            viewport.dispatchEvent(new Event('scroll'));
+            tick(700);
+            render();
+        }
+
+        expect(component.categories.length).toBe(137);
+        expect(component.hasMore).toBeFalse();
+        expect(overlay.textContent).toContain('Đã tải hết dữ liệu');
+
+        viewport.scrollTop = viewport.scrollHeight;
+        viewport.dispatchEvent(new Event('scroll'));
+        render();
+
+        expect(component.isLoadingMore).toBeFalse();
+        expect(overlay.querySelector('[role="status"]')).toBeNull();
     }));
 
     it('shows the empty state only after a valid search returns no matches', fakeAsync(() => {

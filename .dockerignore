@@ -1,12 +1,29 @@
-docker-compose.yml
+# Allow only build inputs. New root files are excluded by default.
+**
+!Dockerfile*
+!package.json
+!package-lock.json
+!angular.json
+!tsconfig.json
+!tsconfig.app.json
+!src/
+!src/**
+!public/
+!public/**
+!default.conf
+!nginx-custom.conf
+!docker/
+!docker/nginx-advanced.conf
+!docker/passwd
+!docker/group
 
-eslint.config.js
-.editorconfig
-.gitignore
-README.md
-.vscode
-
-dist
-node_modules
-.idea
-.angular
+# Tests, nested local artifacts and credentials are not build inputs.
+**/*.spec.ts
+**/node_modules
+**/.git
+**/.env
+**/.env.*
+**/.npmrc
+**/*.log
+**/*.pem
+**/*.key

@@ -2,6 +2,11 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.0.6.
 
+Hướng dẫn Docker hiện tại: [ba bản Dockerfile, distroless, user riêng và cache npm](docker/README.md).
+
+Demo UI/UX mới: [ảnh/PDF, form lớn với updateOn blur và drag/drop workflow](src/app/demos/workflow-ux/README.md).
+Thử [hai tab sửa/xóa, mất mạng, retry cùng idempotency key và IndexedDB outbox](src/app/demos/workflow-ux/offline-sync.md).
+
 ## Học về `Discriminated Unions` hay `Tagged Unions`
 - Là một kỹ thuật trong `Typescript`, cho phép bạn tạo ra một kiểu dữ liệu có thể là một trong nhiều hình dạng khác nhau, nhưng mỗi hình dạng đều có một "nhãn" chung để giúp TypeScript phân biệt chúng một cách chính xác.
 - Thành phần cấu tạo:

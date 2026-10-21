@@ -1,0 +1,94 @@
+<section class="heavy-card" id="nested-data-demo">
+    <p class="eyebrow">DỮ LIỆU LỒNG NHAU · TẢI THEO CẤP / HỦY REQUEST / CACHE CÓ GIỚI HẠN</p>
+    <h2>Duyệt nhiều cấp bằng breadcrumb và từng trang nhỏ</h2>
+    <p>Demo có tối đa 8 cấp, mỗi nhóm thường có 73 mục nhưng chỉ tải 20 mục/trang. Không tạo toàn bộ cây trước. Thử mở thư mục, quay về cấp trước khi đang tải, rồi mở lại để thấy cache hoạt động. Thư mục số 7 là nhóm rỗng để kiểm tra empty state.</p>
+    <div class="actions">
+        <button nz-button nzType="primary" (click)="start()" [disabled]="started()" data-action="start-folders">Mở cây thư mục</button>
+        <button nz-button [disabled]="!started() || loading()" (click)="reload()" data-action="reload-folders">Tải lại cấp hiện tại</button>
+        <button nz-button [disabled]="!started() || loading()" (click)="clearCache()" data-action="clear-folder-cache">Xóa cache và tải lại</button>
+        @if (loading()) { <button nz-button (click)="cancel()" data-action="cancel-folders">Hủy tải</button> }
+        <label for="folder-next-problem">Lỗi cho lần tải mạng tiếp theo</label>
+        <nz-select nzId="folder-next-problem" [ngModel]="nextProblem()" (ngModelChange)="nextProblem.set($event)" [nzDisabled]="loading()">
+            <nz-option nzValue="none" nzLabel="Không gây lỗi"></nz-option>
+            <nz-option nzValue="network" nzLabel="Giả lập lỗi mạng"></nz-option>
+            <nz-option nzValue="cycle" nzLabel="Giả lập vòng lặp ID"></nz-option>
+        </nz-select>
+    </div>
+    <p class="tip">Sau khi chọn lỗi, bấm “Tải lại cấp hiện tại” để bỏ qua cache và chắc chắn tạo request mới.</p>
+    @if (started()) {
+        <nav class="folder-path" aria-label="Đường dẫn thư mục">
+            @for (folder of path(); track folder.id; let index = $index; let last = $last) {
+                @if (last) { <strong aria-current="location">{{ folder.name }}</strong> }
+                @else {
+                    <button nz-button nzType="link" (click)="ancestor(index)" [attr.data-ancestor-index]="index">{{ folder.name }}</button>
+                    <span aria-hidden="true">/</span>
+                }
+            }
+        </nav>
+        <div class="metrics" aria-live="polite">
+            <span>Cấp: {{ current().depth }} · Trang: {{ page() }}</span>
+            <span>Request mạng giả lập: {{ requestCount() }} · Cache hit: {{ cacheHits() }}</span>
+            <span>Cache: {{ cacheSize() }}/{{ cacheLimit }} trang · tối đa 160 mục</span>
+        </div>
+        <div class="folder-panel" [attr.aria-busy]="loading()">
+            @if (loading()) {
+                <p role="status">Đang tải {{ current().name }}… Breadcrumb vẫn dùng được để chuyển cấp và hủy kết quả cũ.</p>
+                <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 4 }" data-demo="folder-loading"></nz-skeleton>
+            } @else if (error()) {
+                <div class="error-box" role="alert" data-demo="folder-error">
+                    <p>{{ error() }}</p>
+                    <button nz-button (click)="reload()" data-action="retry-folders">Thử lại</button>
+                </div>
+            } @else if (cancelled()) {
+                <p role="status">Đã hủy tải. Bấm “Tải lại cấp hiện tại” để tiếp tục.</p>
+            } @else if (loaded()) {
+                <nz-table #folderTable [nzData]="items()" [nzFrontPagination]="false" [nzShowPagination]="false"
+                    nzSize="small" [nzScroll]="{ x: '500px' }" nzNoResult="Thư mục này chưa có mục con. Quay về cấp trước để tiếp tục." data-demo="folder-table">
+                    <thead><tr><th scope="col">Tên</th><th scope="col">Loại</th><th scope="col">Thao tác</th></tr></thead>
+                    <tbody>
+                        @for (item of folderTable.data; track item.id) {
+                            <tr [attr.data-folder-id]="item.id">
+                                <th scope="row" class="folder-name">{{ item.name }}</th>
+                                <td>{{ item.hasChildren ? 'Có thể mở để tải con' : 'Mục lá' }}</td>
+                                <td>
+                                    @if (item.hasChildren) { <button nz-button nzSize="small" (click)="open(item)" [attr.data-open-folder]="item.id">Mở nhóm này</button> }
+                                    @else { <span>Không có cấp con</span> }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </nz-table>
+                @if (total() > pageSize) {
+                    <nz-pagination [nzPageIndex]="page()" [nzPageSize]="pageSize" [nzTotal]="total()"
+                        [nzShowSizeChanger]="false" (nzPageIndexChange)="changePage($event)"></nz-pagination>
+                }
+            }
+        </div>
+    }
+    <p class="tip">Cache LRU chỉ giữ 8 trang được dùng gần nhất, không giữ toàn bộ nhánh đã từng mở. ID trùng hoặc trỏ về tổ tiên bị chặn trước khi cache/render. Demo không bật “expand all” trên một cây chưa biết kích thước.</p>
+    <details><summary>Xem cách tải từng cấp và hủy kết quả cũ</summary><pre>{{ code }}</pre></details>
+</section>
+
+<section class="heavy-card">
+    <p class="eyebrow">CÁC USE CASE FE CẦN CÂN NHẮC</p>
+    <h2>Nặng ở mạng, RAM, CPU hay DOM?</h2>
+    <div class="table-scroll">
+        <table class="guide-table">
+            <thead><tr><th scope="col">Tình huống thực tế</th><th scope="col">Vấn đề UI/UX</th><th scope="col">Hướng xử lý Angular</th></tr></thead>
+            <tbody>
+                <tr><th scope="row">Table 100.000 dòng, nhiều checkbox/switch</th><td>DOM lớn, cuộn giật, mất state khi đổi trang</td><td>Phân trang/lọc qua API; virtual scroll khi phù hợp; track theo ID; state chọn độc lập với DOM; ghi rõ chọn trang hay toàn bộ kết quả.</td></tr>
+                <tr><th scope="row">Cây thư mục hoặc phân quyền nhiều cấp</th><td>Expand all tạo quá nhiều component/request</td><td>Tải con theo parent + phân trang; breadcrumb/drilldown, hoặc flatten node đang mở + nz-tree virtual scroll; giới hạn cache và chặn vòng lặp.</td></tr>
+                <tr><th scope="row">FormArray hàng nghìn ô, validation chéo</th><td>Gõ chậm, lỗi xuất hiện dồn dập</td><td>Chia theo bước/nhóm; chỉ tạo controls cần dùng; updateOn blur khi hợp nghiệp vụ; async validator debounce và hủy; giữ draft trước khi tháo view.</td></tr>
+                <tr><th scope="row">Import CSV/JSON hoặc tính toán báo cáo lớn</th><td>Main thread bị khóa, spinner cũng đứng</td><td>Giới hạn dung lượng; chia tác vụ có thể chia nhỏ; Web Worker cho CPU nặng; progress/cancel; không nhầm await với chạy trên thread khác.</td></tr>
+                <tr><th scope="row">Tỉnh → huyện → xã, chuyển cha liên tục</th><td>Con giữ giá trị không thuộc cha, response cũ ghi đè</td><td>Reset giá trị con ngay khi cha đổi; disable khi chưa có cha; switchMap; loading/error theo từng cấp; cache theo ID cha.</td></tr>
+                <tr><th scope="row">Dashboard nhiều tab/chart, hàng nghìn điểm</th><td>Tạo chart ẩn, giữ listener/canvas sau khi đóng</td><td>Defer phần chưa xem; downsample điểm; destroy chart/listener khi tháo view; giới hạn số instance; giữ filter riêng khi hủy view.</td></tr>
+                <tr><th scope="row">WebSocket phát dữ liệu liên tục</th><td>Render mỗi message, danh sách tăng vô hạn</td><td>Gom cập nhật theo batch/window phù hợp; ring buffer có giới hạn; một kết nối dùng chung khi cần; cleanup subscription; phân biệt mất kết nối và rỗng.</td></tr>
+                <tr><th scope="row">Ảnh/PDF preview trong danh sách dài</th><td>Decode ảnh tốn RAM, nhảy bố cục</td><td>Thumbnail đúng cỡ; ảnh lazy dưới màn hình; khai báo kích thước; giới hạn preview; revokeObjectURL khi không dùng.</td></tr>
+                <tr><th scope="row">Modal mở tiếp modal, kéo dài nhiều cấp</th><td>Lạc ngữ cảnh, focus nhảy, khó quay lại</td><td>Ưu tiên một dialog theo bước hoặc màn hình chi tiết có breadcrumb; lưu draft, nút quay lại, focus rõ ràng; kiểm tra Tab/Escape.</td></tr>
+                <tr><th scope="row">Scroll/resize/drag liên tục</th><td>Event dày, đọc/ghi layout xen kẽ gây giật</td><td>Coalesce bằng requestAnimationFrame; listener ngoài Angular khi thích hợp; chỉ đưa state UI cần thiết trở lại; dọn listener khi hủy.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="tip">Mở Chrome DevTools Performance/Memory để xác định chỗ tốn thời gian và đối tượng bị giữ lại. Không áp dụng mọi kỹ thuật cùng lúc: virtual scroll không giải quyết JSON.parse nặng; OnPush/trackBy cũng không thay thế việc giới hạn payload.</p>
+    <p class="tip">Tài liệu: <a href="https://ng.ant.design/components/tree/en" target="_blank" rel="noopener noreferrer">NG-ZORRO Tree async/virtual</a> · <a href="https://angular.dev/ecosystem/web-workers" target="_blank" rel="noopener noreferrer">Angular Web Workers</a>.</p>
+</section>

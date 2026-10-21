@@ -1,0 +1,71 @@
+<section class="ux-card" id="workflow-board-demo">
+    <p class="eyebrow">DRAG &amp; DROP · WORKFLOW · LỖI MẠNG / XUNG ĐỘT</p>
+    <h2>Chuyển bước đúng luật và lưu đúng trạng thái</h2>
+    <p>Kéo hồ sơ giữa “Cần xử lý” và “Chờ duyệt”, hoặc sắp xếp trong cột. Không nhảy thẳng từ “Cần xử lý” sang “Đã duyệt”; hồ sơ khóa và đã hoàn tất không kéo được. Mọi thứ đều giả lập trên FE.</p>
+    <div class="actions">
+        <label for="workflow-next-failure">Kết quả lần lưu tiếp theo</label>
+        <nz-select nzId="workflow-next-failure" [ngModel]="nextFailure()" (ngModelChange)="nextFailure.set($event)" [nzDisabled]="pending()">
+            <nz-option nzValue="none" nzLabel="Thành công"></nz-option>
+            <nz-option nzValue="network" nzLabel="Lỗi mạng → rollback"></nz-option>
+            <nz-option nzValue="conflict" nzLabel="Người khác vừa cập nhật"></nz-option>
+        </nz-select>
+        <span>Version: {{ version() }} · Request: {{ requestCount() }}</span>
+    </div>
+    <div class="workflow-board" cdkDropListGroup [attr.aria-busy]="pending()">
+        @for (column of board(); track column.id) {
+            <section class="workflow-column" cdkDropList [cdkDropListData]="column" [cdkDropListDisabled]="pending()"
+                [cdkDropListEnterPredicate]="canEnter" (cdkDropListDropped)="dropped($event)" [attr.aria-label]="column.title" [attr.data-stage]="column.id">
+                <h3>{{ column.title }} · {{ column.tasks.length }}</h3>
+                @for (task of column.tasks; track task.id; let first = $first; let last = $last) {
+                    <article class="task-card" cdkDrag [cdkDragData]="task" [cdkDragDisabled]="pending() || !!task.locked || column.id === 'done'" [attr.data-task-id]="task.id">
+                        <button nz-button type="button" class="drag-handle" cdkDragHandle tabindex="-1" aria-hidden="true" [disabled]="pending() || !!task.locked || column.id === 'done'">⠿ Kéo</button>
+                        <strong tabindex="-1" [attr.data-task-title]="task.id">{{ task.title }}</strong>
+                        <p>Người xử lý: {{ task.assignee }} {{ task.locked ? '· Đang khóa' : '' }}</p>
+                        @if (pendingId() === task.id) { <p role="status">Đang lưu hồ sơ này…</p> }
+                        @if (!task.locked && column.id !== 'done') {
+                            <div class="actions">
+                                <button nz-button nzSize="small" [disabled]="pending() || first" (click)="nudge(task, column, -1)" [attr.aria-label]="'Đưa ' + task.title + ' lên'">Lên</button>
+                                <button nz-button nzSize="small" [disabled]="pending() || last" (click)="nudge(task, column, 1)" [attr.aria-label]="'Đưa ' + task.title + ' xuống'">Xuống</button>
+                                @if (column.id === 'todo') {
+                                    <button nz-button nzSize="small" [disabled]="pending()" (click)="move(task.id, 'review')">Gửi duyệt</button>
+                                } @else {
+                                    <button nz-button nzSize="small" [disabled]="pending()" (click)="move(task.id, 'todo')">Trả lại</button>
+                                    <button nz-button nzSize="small" nzType="primary" [disabled]="pending()" (click)="move(task.id, 'done')" [attr.data-approve-id]="task.id">Phê duyệt</button>
+                                }
+                            </div>
+                        }
+                        <ng-template cdkDragPreview><strong>{{ task.title }}</strong><p>Chuyển hồ sơ · {{ task.assignee }}</p></ng-template>
+                    </article>
+                } @empty { <p>Thả hồ sơ hợp lệ vào đây.</p> }
+            </section>
+        }
+    </div>
+    <p class="feedback" role="status">{{ feedback() }}</p>
+    @if (error()) {
+        <div class="error-box" role="alert">
+            <p>{{ error() }}</p>
+            @if (retryCommand()) { <button nz-button [disabled]="pending()" (click)="retry()" data-action="retry-workflow">Thử lại thao tác</button> }
+        </div>
+    }
+    <p class="tip">Đổi thứ tự/chuyển bước có thể hoàn tác được hiển thị ngay. Phê duyệt chờ xác nhận rồi mới chuyển cột. Demo chỉ cho một lệnh ghi đang chạy trên board để tránh rollback ghi đè thao tác khác; các demo khác trên trang vẫn dùng được. Khi nhiều người cùng làm, API thực phải kiểm tra quyền, luật chuyển bước, version và chống gửi trùng.</p>
+</section>
+
+<section class="ux-card">
+    <p class="eyebrow">WORKFLOW THỰC TẾ · NHIỀU NGƯỜI DÙNG / NHIỀU TƯƠNG TÁC</p>
+    <h2>Frontend kiểm soát được phần nào khi tải cao?</h2>
+    <div class="table-scroll"><table class="guide">
+        <thead><tr><th scope="col">Use case</th><th scope="col">Thiết kế FE nên có</th></tr></thead>
+        <tbody>
+            <tr><th scope="row">Nhiều người cùng phê duyệt một hồ sơ</th><td>Gửi expectedVersion; xử lý conflict bằng bản mới và giải thích khác biệt; không retry mù. Disable nút chỉ chặn browser hiện tại, không khóa người khác.</td></tr>
+            <tr><th scope="row">Workflow builder nhiều node/cạnh</th><td>Model phẳng theo ID; kiểm tra cạnh trùng/vòng lặp nếu flow yêu cầu DAG; chỉ render vùng nhìn thấy; không validate toàn graph trong mỗi pointermove. Preview nhẹ, validate khi drop, giữ lịch sử undo có giới hạn.</td></tr>
+            <tr><th scope="row">Chuyển người xử lý hoặc kéo thả hàng loạt</th><td>Gửi ID + đích/anchor thay vì index DOM. Serialize khi thứ tự phụ thuộc nhau; batch hoặc giới hạn số request song song; hiển thị thành công/thất bại từng mục và chỉ retry mục lỗi.</td></tr>
+            <tr><th scope="row">Mất mạng, timeout sau khi bấm duyệt</th><td>Trạng thái có thể chưa biết vì server có thể đã nhận lệnh. Refresh/query trạng thái và dùng idempotency key theo hợp đồng API; không chỉ rollback rồi khẳng định BE chưa lưu.</td></tr>
+            <tr><th scope="row">WebSocket báo thay đổi dồn dập</th><td>Gom cập nhật theo khoảng thời gian phù hợp, dedupe theo ID/version, buffer có giới hạn. Nếu form đang dirty thì báo có bản mới, không ghi đè nội dung đang nhập.</td></tr>
+            <tr><th scope="row">Hàng trăm file đính kèm</th><td>Thumbnail + lazy; giới hạn dung lượng/số file và concurrency upload; tiến trình từng file; chỉ một preview; dọn Blob URL; file lớn dùng truyền dữ liệu/preview từng phần theo API.</td></tr>
+            <tr><th scope="row">Auto-save form theo bước</th><td>Debounce có chủ đích; lưu draft trước khi tháo controls; hiển thị đang lưu/đã lưu/lỗi. Serialize hoặc version hóa các lần ghi, không dùng switchMap để giả định lệnh ghi cũ đã bị server hủy.</td></tr>
+            <tr><th scope="row">429 / 503 khi nhiều người dùng</th><td>Giữ draft, giới hạn retry có backoff/jitter theo hợp đồng Retry-After; dừng khi người dùng rời ngữ cảnh. FE giảm request từ client này; capacity, queue và bảo đảm dữ liệu cần BE hỗ trợ.</td></tr>
+        </tbody>
+    </table></div>
+    <p class="tip">CDK DragDrop không tự lưu dữ liệu và không tự cung cấp đầy đủ thao tác bàn phím cho workflow. Demo dùng nút Lên/Xuống/Gửi duyệt/Trả lại để có đường thao tác không cần kéo. Màn hình mobile có thể cuộn ngang board, các nút vẫn dùng được.</p>
+    <p class="tip">Tài liệu: <a href="https://angular.dev/guide/drag-drop" target="_blank" rel="noopener noreferrer">Angular CDK DragDrop</a> · <a href="https://angular.dev/guide/forms/form-validation" target="_blank" rel="noopener noreferrer">Angular Form Validation</a> · <a href="https://angular.dev/guide/image-optimization" target="_blank" rel="noopener noreferrer">NgOptimizedImage</a>.</p>
+</section>

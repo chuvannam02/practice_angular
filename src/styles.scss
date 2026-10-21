@@ -1,3 +1,6 @@
+@use './app/_utils/common/styles/form-controls';
+@use './app/_utils/common/styles/modal';
+
 /* You can add global styles to this file, and also import other style files */
 .groups_buttons {
     display: flex;

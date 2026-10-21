@@ -1,0 +1,97 @@
+:host { display: block; margin-top: 32px; }
+
+.practice-card {
+    margin-bottom: 24px;
+    padding: 28px;
+    border: 1px solid #e8edf5;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 28px rgb(23 32 51 / 6%);
+}
+
+.eyebrow { margin: 0 0 8px; color: #2864dc; font-size: 12px; font-weight: 700; letter-spacing: .06em; }
+h2 { margin: 0; color: #172033; font-size: 24px; }
+h3 { margin: 0 0 14px; color: #29384e; font-size: 16px; }
+.intro { max-width: 850px; margin: 10px 0 24px; color: #62708a; line-height: 1.7; }
+.table-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.table-panel { min-width: 0; overflow-x: auto; padding: 18px; border: 1px solid #e8edf5; border-radius: 12px; }
+.selection-summary { color: #50607a; }
+.selected-row > td, .selected-row > th { background: #f0f7ff; }
+.table-caption { margin: 14px 0 0; color: #68758d; font-size: 12px; line-height: 1.7; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px; }
+.comparison-actions { margin-top: 0; }
+.counter { color: #68758d; font-size: 12px; white-space: nowrap; }
+.feedback { min-height: 44px; margin: 16px 0; padding: 10px 14px; border-radius: 8px; background: #f4f7fb; color: #50607a; }
+.error-message { margin-bottom: 12px; padding: 10px; border-radius: 8px; background: #fff1f0; color: #b42318; }
+.mode-badge { display: inline-block; margin-bottom: 10px; padding: 3px 9px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.warning { color: #976000; background: #fff6de; }
+.success { color: #137448; background: #eaf8ef; }
+.untracked-panel { border-top: 3px solid #e6b54a; }
+.tracked-panel { border-top: 3px solid #42a974; }
+.lesson { margin: 20px 0 14px; color: #50607a; font-size: 13px; line-height: 1.8; }
+code { padding: 2px 5px; border-radius: 4px; background: #edf2fa; color: #214d9d; }
+details { border-top: 1px solid #edf1f7; padding-top: 14px; }
+summary { width: fit-content; color: #2864dc; cursor: pointer; font-size: 13px; font-weight: 600; }
+pre { overflow-x: auto; margin: 14px 0 0; padding: 18px; border-radius: 10px; background: #172033; color: #dce8ff; font-size: 12px; line-height: 1.8; }
+
+.joined-tables-scroll {
+    overflow-x: auto;
+    border: 1px solid #dce4ef;
+    border-radius: 12px;
+}
+
+.joined-tables {
+    display: grid;
+    grid-template-columns: minmax(300px, 1fr) minmax(340px, 1.2fr);
+    min-width: 700px;
+    gap: 0;
+}
+
+.joined-pane { min-width: 0; }
+.joined-pane + .joined-pane { border-inline-start: 1px solid #dce4ef; }
+.joined-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 52px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #dce4ef;
+    background: #f4f7fb;
+
+    h3 { margin: 0; }
+}
+
+.joined-tables thead th {
+    height: 44px;
+    padding: 10px 16px;
+    background: #edf2f8;
+    color: #35445c;
+    font-weight: 600;
+}
+
+.joined-tables tbody th,
+.joined-tables tbody td {
+    height: 56px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #edf1f7;
+    text-align: start;
+}
+
+.joined-tables tbody th { background: #f8fafd; font-weight: 600; }
+.joined-tables .selected-row > th,
+.joined-tables .selected-row > td { background: #eaf3ff; }
+.row-heading { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.row-heading nz-spin { margin-inline-start: auto; }
+.joined-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.joined-toolbar .selection-summary, .joined-toolbar .actions { margin: 0; }
+
+@media (max-width: 900px) {
+    .table-pair { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 520px) {
+    .practice-card { padding: 18px; }
+    .table-panel { padding: 12px; }
+    h2 { font-size: 20px; }
+}

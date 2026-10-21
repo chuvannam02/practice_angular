@@ -1,0 +1,66 @@
+<section class="ux-card" id="optimistic-ux">
+    <p class="eyebrow">UI/UX · OPTIMISTIC UPDATE / ROLLBACK</p>
+    <h2>Thích ngay, lỗi thì hoàn tác</h2>
+    <p>Demo chạy hoàn toàn trên FE, mỗi request mất 800ms. Thử thích, bỏ thích và bật lỗi lần tiếp theo; quan sát cả trạng thái và số lượt thích.</p>
+    <article class="like-example" aria-label="Bài viết minh họa">
+        <h3>Một giao diện phản hồi rõ ràng giúp người dùng yên tâm</h3>
+        <p>Trạng thái đổi ngay khi bấm. Trong lúc chờ, khóa riêng nút này để tránh request chồng nhau.</p>
+        <div class="actions">
+            <button nz-button [nzType]="state().liked ? 'primary' : 'default'"
+                [disabled]="pending()" [attr.aria-pressed]="state().liked" (click)="toggle()" data-action="toggle-like">
+                <span aria-hidden="true">{{ state().liked ? '♥' : '♡' }}</span> {{ likeLabel() }} · {{ state().count }}
+            </button>
+            @if (pending()) { <span class="pending" role="status">Đang đồng bộ…</span> }
+        </div>
+        <label nz-checkbox [ngModel]="failNext()" (ngModelChange)="failNext.set($event)"
+            [nzDisabled]="pending()" nzId="like-fail-next" for="like-fail-next">Giả lập lỗi request tiếp theo</label>
+        @if (error()) {
+            <div class="error-box" role="alert" data-demo="like-error">
+                <p>{{ error() }}</p>
+                <button nz-button (click)="retry()" [disabled]="pending()" data-action="retry-like">Thử lại thao tác vừa lỗi</button>
+            </div>
+        }
+        <p class="status" aria-live="polite">{{ status() }}</p>
+        <dl class="state-grid">
+            <div><dt>Giao diện hiện tại</dt><dd data-demo="like-state">{{ state().liked ? 'Đã thích' : 'Chưa thích' }} · {{ state().count }}</dd></div>
+            <div><dt>API giả lập đã xác nhận</dt><dd data-demo="confirmed-like">{{ confirmed().liked ? 'Đã thích' : 'Chưa thích' }} · {{ confirmed().count }}</dd></div>
+            <div><dt>Request đã gửi</dt><dd>{{ requests() }}</dd></div>
+        </dl>
+    </article>
+    <p class="tip">Phù hợp với like, bookmark, bật/tắt tùy chọn có thể hoàn tác. Với thanh toán hoặc thao tác khó khôi phục, nên chờ kết quả xác nhận trước khi báo thành công. Khi nhiều nơi cùng sửa một bản ghi, cần quản lý phiên bản/request để rollback không ghi đè thay đổi mới hơn.</p>
+    <details><summary>Xem luồng optimistic update</summary><pre>{{ optimisticCode }}</pre></details>
+</section>
+
+<section class="ux-card" id="signals-ux">
+    <p class="eyebrow">ANGULAR · SIGNAL CÓ BẮT BUỘC KHÔNG?</p>
+    <h2>Biến thường vẫn dùng được</h2>
+    <p>Bấm một lần để cập nhật cả hai. Event trong template của component OnPush làm cả biến thường lẫn signal hiển thị giá trị mới.</p>
+    <button nz-button (click)="incrementBoth()" data-action="increment-both">Tăng cả hai</button>
+    <dl class="state-grid">
+        <div><dt>Biến thường</dt><dd data-demo="regular-count">{{ regularCount }}</dd></div>
+        <div><dt>Signal</dt><dd data-demo="signal-count">{{ signalCount() }}</dd></div>
+        <div><dt>Computed × 2</dt><dd>{{ doubled() }}</dd></div>
+    </dl>
+    <ul>
+        <li><strong>Signal:</strong> tiện cho trạng thái hiển thị như loading, lỗi, selected; Angular theo dõi nơi đọc để đánh dấu cập nhật, kể cả trong OnPush.</li>
+        <li><strong>Computed:</strong> cache giá trị dẫn xuất theo các signal được đọc, chỉ tính lại khi cần. Không bắt buộc chuyển mọi biến sang signal.</li>
+        <li><strong>Biến thường:</strong> phù hợp cấu hình, snapshot và trạng thái đơn giản. Với callback async trong OnPush, chủ động dùng markForCheck khi cần, hoặc dùng async pipe.</li>
+        <li><strong>RxJS:</strong> vẫn phù hợp debounce, switchMap hủy tìm kiếm cũ và phối hợp luồng bất đồng bộ. Signal không tự hủy request hay observer.</li>
+    </ul>
+    <details><summary>Xem code biến thường / signal / computed</summary><pre>{{ signalCode }}</pre></details>
+</section>
+
+<section class="ux-card">
+    <p class="eyebrow">CÁC MẸO ÁP DỤNG VÀO FORM / TABLE / MODAL</p>
+    <h2>Giúp người dùng biết đang xảy ra điều gì</h2>
+    <ul class="tips">
+        <li><strong>Loading đúng phạm vi:</strong> lưu một dòng thì loading dòng đó; dùng skeleton gần kích thước nội dung để giảm nhảy bố cục.</li>
+        <li><strong>Validation dễ sửa:</strong> label luôn hiển thị; lỗi sau khi rời ô hoặc bấm lưu; chỉ rõ cần sửa gì và focus ô lỗi đầu tiên.</li>
+        <li><strong>Lỗi không làm mất công nhập:</strong> giữ dữ liệu, cho thử lại, phân biệt không có dữ liệu với tải thất bại.</li>
+        <li><strong>Chỉ hỏi khi có nguy cơ mất dữ liệu:</strong> so sánh dữ liệu hiện tại với ban đầu; thao tác xóa có thể bổ sung Undo nếu khôi phục được.</li>
+        <li><strong>Tìm kiếm và phân trang:</strong> debounce, hủy kết quả cũ, giữ mục đã chọn; tránh kết quả request cũ ghi đè kết quả mới.</li>
+        <li><strong>Bàn phím và màn hình nhỏ:</strong> thứ tự Tab hợp lý, viền focus rõ, trả focus về nút mở khi đóng modal; grid về một cột trên mobile.</li>
+        <li><strong>Thông báo có hành động:</strong> ghi “Thử lưu lại” thay vì chỉ “Có lỗi”; báo thành công sau khi lưu được xác nhận.</li>
+    </ul>
+    <p class="tip">Tham khảo: <a href="https://angular.dev/guide/signals" target="_blank" rel="noopener noreferrer">Angular Signals</a> · <a href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/" target="_blank" rel="noopener noreferrer">WAI: keyboard và focus cho modal</a>.</p>
+</section>

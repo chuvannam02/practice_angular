@@ -1,0 +1,62 @@
+<section class="ux-card" id="media-preview-demo">
+    <p class="eyebrow">ẢNH LAZY LOAD · PREVIEW ẢNH / PDF · FILE DROP</p>
+    <h2>Thumbnail trước, preview khi người dùng yêu cầu</h2>
+    <p>Ảnh chỉ được gắn URL khi xuất hiện trong viewport và khung cuộn gallery. Skeleton giữ chỗ đến khi ảnh tải xong; mở Network → Img để kiểm tra khi cuộn. Các SVG mẫu nằm trong project; ảnh thật nên dùng thumbnail WebP/AVIF.</p>
+    <div class="gallery-scroll" aria-label="Gallery ảnh lazy load">
+        <div class="gallery-grid">
+            @for (picture of pictures; track picture.id) {
+                <article class="image-card">
+                    <div class="thumb-frame" appInViewOnce #visibility="appInViewOnce" (entered)="revealImage(picture.id)"
+                        [attr.aria-busy]="visibleImages().has(picture.id) && !imageStates()[picture.id]">
+                        @if (visibleImages().has(picture.id) && imageStates()[picture.id] !== 'error') {
+                            <img [ngSrc]="picture.src + '?preview=' + (revisions()[picture.id] || 0)"
+                                width="480" height="300" [disableOptimizedSrcset]="true" loading="eager" decoding="async"
+                                [alt]="picture.name" [class.image-hidden]="imageStates()[picture.id] !== 'loaded'"
+                                (load)="imageState(picture.id, 'loaded')" (error)="imageState(picture.id, 'error')" />
+                        }
+                        @if (!imageStates()[picture.id]) {
+                            <div class="image-skeleton" [class.is-loading]="visibleImages().has(picture.id)" role="status">
+                                {{ visibleImages().has(picture.id) ? 'Đang tải ảnh…' : 'Cuộn tới đây để tải ảnh' }}
+                                @if (visibility.unsupported() && !visibleImages().has(picture.id)) {
+                                    <button nz-button (click)="revealImage(picture.id)">Tải ảnh</button>
+                                }
+                            </div>
+                        }
+                        @if (imageStates()[picture.id] === 'error') {
+                            <div class="image-fallback" role="status">Không tải được ảnh. <button nz-button (click)="retryImage(picture.id)">Thử lại ảnh</button></div>
+                        }
+                    </div>
+                    <p>{{ picture.name }}</p>
+                    <button nz-button [disabled]="!!preview() || reading()" (click)="openPicture(picture.src, picture.name)">Xem ảnh</button>
+                </article>
+            }
+        </div>
+    </div>
+    <div class="actions">
+        <button nz-button [disabled]="!!preview() || reading()" (click)="openPdf()" data-action="sample-pdf">Preview PDF mẫu cục bộ</button>
+        <button nz-button (click)="simulateImageError()">Giả lập lỗi ảnh đầu tiên</button>
+    </div>
+    <div class="file-zone" (dragover)="allowDrop($event)" (drop)="drop($event)">
+        <label for="workflow-preview-file">Chọn hoặc kéo thả một ảnh/PDF, tối đa 10 MB</label>
+        <input id="workflow-preview-file" type="file" accept="image/png,image/jpeg,image/webp,application/pdf"
+            [disabled]="!!preview()" (change)="pick($event)" />
+        <p>File được đọc và preview trên máy bạn, không upload lên server.</p>
+    </div>
+    @if (reading()) { <p role="status">Đang kiểm tra file…</p> }
+    @if (error()) { <p class="error-box" role="alert">{{ error() }}</p> }
+    <p class="tip">Blob URL đang giữ: {{ objectUrlCount() }}. Chỉ mở một preview; URL được revoke sau khi modal đóng hoặc component bị hủy. PDF dùng trình xem của trình duyệt, có link tải nếu không hỗ trợ.</p>
+    <p class="tip">IntersectionObserver dùng rootMargin = 0; trước khi giao nhau chưa tạo thẻ img nên chưa có request. Khi đã xuất hiện thì ảnh được giữ lại, không tải lại mỗi lần cuộn. Ảnh hero/LCP nên dùng priority ngay từ đầu. Giới hạn MB không giới hạn RAM giải mã; PDF hàng trăm trang cần lazy từng trang và giới hạn canvas/cache.</p>
+</section>
+
+<ng-template #previewBody>
+    @if (preview(); as media) {
+        @if (media.kind === 'image') {
+            <img class="full-preview" [src]="media.url" [alt]="media.name" decoding="async" (error)="previewError.set(true)" />
+            @if (previewError()) { <p class="error-box" role="alert">Không giải mã được ảnh. Hãy thử file khác.</p> }
+        } @else {
+            <iframe class="pdf-preview" [src]="media.safeUrl" [title]="'PDF: ' + media.name" referrerpolicy="no-referrer"></iframe>
+            <p>Không thấy PDF? <a [href]="media.url" [download]="media.name">Tải file để mở bằng trình đọc PDF</a>.</p>
+        }
+        <div class="actions"><button nz-button (click)="close()" data-action="close-media-preview">Đóng preview</button></div>
+    }
+</ng-template>

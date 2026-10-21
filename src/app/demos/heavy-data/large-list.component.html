@@ -1,0 +1,41 @@
+<section class="heavy-card" id="large-list-demo">
+    <p class="eyebrow">DỮ LIỆU LỚN · DOM / CPU / TRẠNG THÁI CHECKBOX</p>
+    <h2>20.000 bản ghi, chỉ render vùng đang xem</h2>
+    <p>Tạo dữ liệu giả lập theo batch có ngân sách khoảng 4ms, tối đa 1.000 mục mỗi frame. Trong lúc chạy, thử bấm nút kiểm tra tương tác hoặc hủy tải.</p>
+    <div class="actions">
+        <button nz-button nzType="primary" [nzLoading]="loading()" [disabled]="loading()" (click)="load()" data-action="load-large-list">{{ rows().length ? 'Tạo lại 20.000 bản ghi' : 'Tạo 20.000 bản ghi' }}</button>
+        @if (loading()) { <button nz-button (click)="cancelLoad()" data-action="cancel-large-list">Hủy tạo dữ liệu</button> }
+        <button nz-button (click)="probe()" data-action="probe-ui">Thử tương tác · {{ probeCount() }}</button>
+        <button nz-button [disabled]="!rows().length && !loading()" (click)="clear()" data-action="clear-large-list">Giải phóng dữ liệu</button>
+    </div>
+    @if (loading()) { <nz-progress [nzPercent]="progress()" nzSize="small"></nz-progress> }
+    <p class="feedback" role="status">{{ feedback() }}</p>
+    <div class="list-toolbar">
+        <label class="search-field" for="large-list-query">Tìm trong dữ liệu đã tải
+            <input nz-input id="large-list-query" placeholder="Ví dụ: ho so 001 hoặc nhom 3"
+                [ngModel]="query()" (ngModelChange)="search($event)" />
+        </label>
+        <button nz-button [disabled]="!filteredRows().length || filtering()" (click)="selectFiltered()" data-action="select-filtered">Chọn tất cả {{ filteredRows().length }} kết quả</button>
+        <button nz-button [disabled]="!filteredRows().length" (click)="jumpToEnd()" data-action="jump-list-end">Cuộn cuối</button>
+        <button nz-button [disabled]="!selectedIds().size" (click)="clearSelection()" data-action="clear-list-selection">Bỏ chọn tất cả</button>
+    </div>
+    <div class="metrics" aria-live="polite">
+        <span>Dữ liệu: {{ rows().length }} · Khớp: {{ filteredRows().length }}</span>
+        <span>Đang gắn DOM: {{ range().end - range().start }} dòng (gồm buffer)</span>
+        <span>Đã chọn: {{ selectedIds().size }} ID</span>
+        @if (filtering()) { <span>Đang chờ lọc…</span> }
+    </div>
+    <cdk-virtual-scroll-viewport class="large-viewport" [itemSize]="52" [minBufferPx]="104" [maxBufferPx]="208"
+        role="list" aria-label="Danh sách hồ sơ ảo hóa" tabindex="0" data-demo="large-viewport">
+        <div class="virtual-row" *cdkVirtualFor="let row of filteredRows(); let index = index; trackBy: trackById"
+            role="listitem" [attr.aria-posinset]="index + 1" [attr.aria-setsize]="filteredRows().length" [attr.data-row-id]="row.id">
+            <label nz-checkbox [ngModel]="selectedIds().has(row.id)" (ngModelChange)="select(row.id, $event)"
+                [nzId]="'large-row-' + row.id" [attr.for]="'large-row-' + row.id">Chọn {{ row.name }}</label>
+            <span class="row-group">{{ row.group }}</span>
+        </div>
+    </cdk-virtual-scroll-viewport>
+    @if (rows().length && !filteredRows().length && !filtering()) { <p>Không có kết quả phù hợp. Thử từ khóa khác hoặc xóa bộ lọc.</p> }
+    <p class="tip">Checkbox được lưu theo ID nên cuộn ra/vào hoặc lọc không làm mất lựa chọn. “Chọn tất cả” ở đây áp dụng cho toàn bộ kết quả đang lọc trong bộ nhớ, không chỉ những dòng nhìn thấy. Chiều cao mỗi dòng cố định 52px, không cho text tự xuống dòng.</p>
+    <p class="tip">Virtual scroll giảm DOM, không giảm payload hay RAM của 20.000 object. Với dữ liệu thực lớn hơn, kết hợp phân trang/lọc qua API và giới hạn cache. Chunking vẫn chạy trên main thread; tác vụ CPU nặng nên cân nhắc Web Worker.</p>
+    <details><summary>Xem code và giới hạn của giải pháp</summary><pre>{{ code }}</pre></details>
+</section>

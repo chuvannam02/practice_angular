@@ -1,0 +1,144 @@
+<section class="modal-demo-card" id="modal-focus-demo">
+    <p class="eyebrow">VIEW ĐỘNG DÙNG CHUNG · MODAL / SKELETON / AUTOFOCUS</p>
+    <h2>Mở modal, chờ form xuất hiện rồi focus đúng input</h2>
+    <p class="intro">Cùng một template form được dùng cho tạo mới và chỉnh sửa, với context riêng mỗi lần mở. Phần thân được lazy load, hiện skeleton trong lúc tải dữ liệu rồi tạo embedded view. Input được chia grid 2 cột.</p>
+    <div class="settings">
+        <div class="delay-setting">
+            <label for="modal-demo-delay">Độ trễ dữ liệu giả lập</label>
+            <nz-select nzId="modal-demo-delay" [(ngModel)]="loadDelayMs" [nzDisabled]="isOpen()">
+                <nz-option [nzValue]="0" nzLabel="0ms · tải nhanh"></nz-option>
+                <nz-option [nzValue]="900" nzLabel="900ms · bình thường"></nz-option>
+                <nz-option [nzValue]="1800" nzLabel="1800ms · tải chậm"></nz-option>
+            </nz-select>
+        </div>
+        <label nz-checkbox [(ngModel)]="disableName" [nzDisabled]="isOpen()"
+            nzId="modal-demo-disable-name" for="modal-demo-disable-name">Disabled ô Họ và tên → focus sang Email</label>
+    </div>
+    <div class="actions">
+        <button nz-button nzType="primary" [disabled]="isOpen()" (click)="open('create', $event)" data-action="open-create-modal">Mở modal tạo mới</button>
+        <button nz-button [disabled]="isOpen()" (click)="open('edit', $event)" data-action="open-edit-modal">Mở modal chỉnh sửa</button>
+        <span class="badge">Đã mở {{ openCount() }} lần · cùng template</span>
+    </div>
+    <p class="lesson">Mã hồ sơ luôn disabled. Họ và tên được focus đầu tiên nếu đang bật; nếu ô này disabled thì chọn Email. Thử cả tải nhanh/chậm, đóng trước khi tải xong và mở lại để kiểm tra.</p>
+    <ul class="lesson">
+        <li>Form sẵn sàng là nhập được ngay. Khi lưu: khóa form tạm thời, loading nút và chặn gửi trùng.</li>
+        <li>Đóng bằng nút Đóng, dấu × hoặc Escape đều hỏi nếu có thay đổi. Sửa rồi trả về giá trị cũ sẽ không hỏi.</li>
+        <li>Bật lỗi giả lập trong modal để kiểm tra: dữ liệu vẫn còn, thông báo rõ lỗi và có thể lưu lại.</li>
+    </ul>
+    <p *ngIf="lastSaved()" class="saved-message" aria-live="polite">{{ lastSaved() }}</p>
+    <details><summary>Xem code tái sử dụng template và xử lý focus</summary><pre>{{ focusCode }}</pre></details>
+</section>
+
+<ng-template #modalContent let-session>
+    <div class="modal-focus-content" [appAutofocusFirst]="session.opened()"
+        (firstInputFocused)="onFocused($event, session)" data-demo="modal-focus-content">
+        <p class="focus-status" aria-live="polite">
+            {{ session.focusedField() ? 'Đã tự focus: ' + session.focusedField() : session.ready() ? 'Form đã render, đang tìm input hợp lệ…' : 'Đang tải form và dữ liệu…' }}
+        </p>
+        @defer (when session.opened()) {
+            <app-template-modal-body
+                [contentTemplate]="sharedForm" [context]="{ $implicit: session }"
+                [loadingTemplate]="skeletonTemplate" [delayMs]="session.delayMs" [cancel$]="session.closed$"
+                (contentReady)="session.ready.set(true)"></app-template-modal-body>
+        } @placeholder {
+            <ng-container [ngTemplateOutlet]="skeletonTemplate"></ng-container>
+        } @loading {
+            <ng-container [ngTemplateOutlet]="skeletonTemplate"></ng-container>
+        } @error {
+            <p role="alert" class="error-message">Không tải được phần thân modal. Đóng rồi mở lại hoặc tải lại trang.</p>
+        }
+    </div>
+</ng-template>
+
+<ng-template #skeletonTemplate>
+    <div class="form-skeleton" data-demo="modal-skeleton" role="status" aria-label="Đang tải form">
+        <div nz-row [nzGutter]="[16, 20]">
+            <div nz-col [nzXs]="24" [nzMd]="12" *ngFor="let field of [1, 2, 3, 4, 5, 6]">
+                <nz-skeleton [nzActive]="true" [nzTitle]="{ width: '45%' }" [nzParagraph]="{ rows: 1 }"></nz-skeleton>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #sharedForm let-session>
+    <form #profileForm="ngForm" class="profile-form" data-demo="lazy-profile-form"
+        (ngSubmit)="save(session, profileForm)" [attr.aria-busy]="session.saving()">
+        <p class="form-description">{{ session.mode === 'create' ? 'Thông tin hồ sơ mới' : 'Dữ liệu được nạp cho hồ sơ NV-0007' }}</p>
+        <input type="hidden" name="internalId" [value]="session.id" />
+        <div hidden><input type="text" aria-label="Input ẩn không được focus" /></div>
+        <fieldset [disabled]="session.saving()" class="profile-fields">
+        <legend class="form-legend">Thông tin hồ sơ</legend>
+        <div nz-row [nzGutter]="[16, 20]">
+            <div nz-col [nzXs]="24" [nzMd]="12">
+                <div class="field">
+                    <label [attr.for]="'profile-' + session.id + '-code'">Mã hồ sơ <span class="field-note">disabled</span></label>
+                    <input nz-input [id]="'profile-' + session.id + '-code'" name="code"
+                        [ngModel]="session.values.code" disabled data-field="code" />
+                </div>
+            </div>
+            <div nz-col [nzXs]="24" [nzMd]="12">
+                <div class="field">
+                    <label [attr.for]="'profile-' + session.id + '-name'">Họ và tên (bắt buộc) <span *ngIf="session.disableName" class="field-note">disabled</span></label>
+                    <input nz-input [id]="'profile-' + session.id + '-name'" name="fullName" placeholder="Nhập họ và tên"
+                        [ngModel]="session.values.name" (ngModelChange)="updateField(session, 'name', $event)"
+                        #fullName="ngModel" [disabled]="session.disableName" required data-field="name" autocomplete="name"
+                        [attr.aria-invalid]="fullName.invalid && (fullName.touched || profileForm.submitted)"
+                        [attr.aria-describedby]="'profile-' + session.id + '-name-error'" />
+                    <span [id]="'profile-' + session.id + '-name-error'" class="field-error"
+                        *ngIf="fullName.invalid && (fullName.touched || profileForm.submitted)">Vui lòng nhập họ và tên.</span>
+                </div>
+            </div>
+            <div nz-col [nzXs]="24" [nzMd]="12">
+                <div class="field">
+                    <label [attr.for]="'profile-' + session.id + '-email'">Email (bắt buộc)</label>
+                    <input nz-input type="email" [id]="'profile-' + session.id + '-email'" name="email"
+                        placeholder="email@example.com" [ngModel]="session.values.email"
+                        (ngModelChange)="updateField(session, 'email', $event)" #email="ngModel"
+                        required email data-field="email" autocomplete="email"
+                        [attr.aria-invalid]="email.invalid && (email.touched || profileForm.submitted)"
+                        [attr.aria-describedby]="'profile-' + session.id + '-email-error'" />
+                    <span [id]="'profile-' + session.id + '-email-error'" class="field-error"
+                        *ngIf="email.invalid && (email.touched || profileForm.submitted)">Nhập địa chỉ email hợp lệ, ví dụ an&#64;example.com.</span>
+                </div>
+            </div>
+            <div nz-col [nzXs]="24" [nzMd]="12">
+                <div class="field">
+                    <label [attr.for]="'profile-' + session.id + '-phone'">Điện thoại</label>
+                    <input nz-input type="tel" [id]="'profile-' + session.id + '-phone'" name="phone"
+                        placeholder="Nhập số điện thoại" [ngModel]="session.values.phone"
+                        (ngModelChange)="updateField(session, 'phone', $event)" data-field="phone" autocomplete="tel" />
+                </div>
+            </div>
+            <div nz-col [nzXs]="24" [nzMd]="12">
+                <div class="field">
+                    <label [attr.for]="'profile-' + session.id + '-department'">Phòng ban</label>
+                    <input nz-input [id]="'profile-' + session.id + '-department'" name="department"
+                        placeholder="Nhập phòng ban" [ngModel]="session.values.department"
+                        (ngModelChange)="updateField(session, 'department', $event)" data-field="department" />
+                </div>
+            </div>
+            <div nz-col [nzXs]="24" [nzMd]="12">
+                <div class="field">
+                    <label [attr.for]="'profile-' + session.id + '-address'">Địa chỉ</label>
+                    <input nz-input [id]="'profile-' + session.id + '-address'" name="address"
+                        placeholder="Nhập địa chỉ" [ngModel]="session.values.address"
+                        (ngModelChange)="updateField(session, 'address', $event)" data-field="address" autocomplete="street-address" />
+                </div>
+            </div>
+        </div>
+        </fieldset>
+        <div class="save-options">
+            <label nz-checkbox [ngModel]="session.failNextSave()" (ngModelChange)="session.failNextSave.set($event)"
+                [ngModelOptions]="{ standalone: true }" [nzDisabled]="session.saving()"
+                nzId="modal-fail-next-save" for="modal-fail-next-save">Giả lập lỗi lần lưu tiếp theo</label>
+            <span class="field-note" aria-live="polite">{{ session.dirty() ? 'Có thay đổi chưa lưu' : 'Chưa có thay đổi' }}</span>
+        </div>
+        <p *ngIf="session.saveError()" class="error-message" role="alert" data-demo="save-error">{{ session.saveError() }}</p>
+        <p *ngIf="session.saving()" role="status">Đang lưu dữ liệu giả lập… Vui lòng chờ.</p>
+        <div class="modal-actions">
+            <button nz-button type="button" [disabled]="session.saving()" (click)="close(session)" data-action="close-profile-modal">Đóng</button>
+            <button nz-button nzType="primary" type="submit" [nzLoading]="session.saving()"
+                [disabled]="session.saving()" data-action="save-profile">{{ session.saveError() ? 'Thử lưu lại' : 'Lưu giả lập' }}</button>
+        </div>
+    </form>
+</ng-template>

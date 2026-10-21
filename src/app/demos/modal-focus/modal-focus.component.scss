@@ -1,0 +1,29 @@
+:host { display: block; }
+.modal-demo-card { margin-bottom: 24px; padding: 28px; border: 1px solid #dce7f5; border-radius: 16px; background: #fff; box-shadow: 0 8px 28px rgb(23 32 51 / 6%); }
+.eyebrow { margin: 0 0 8px; color: #2864dc; font-size: 12px; font-weight: 700; letter-spacing: .05em; }
+h2 { margin: 0; color: #172033; font-size: 24px; }
+.intro, .lesson { color: #62708a; line-height: 1.8; }
+.intro { margin: 10px 0 22px; }
+.lesson { font-size: 13px; }
+.settings { display: flex; flex-wrap: wrap; align-items: end; gap: 20px; }
+.delay-setting { display: grid; gap: 8px; min-width: 230px; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 20px 0; }
+.badge, .field-note { display: inline-block; padding: 3px 8px; border-radius: 6px; background: #edf2fa; color: #355b95; font-size: 12px; }
+.focus-status { margin: 0 0 20px; padding: 12px; border-radius: 8px; background: #edf5ff; color: #355b95; }
+.form-skeleton { padding: 8px 0; }
+.form-description { margin-bottom: 20px; color: #68758d; }
+.field { display: grid; gap: 8px; }
+.profile-fields { min-width: 0; margin: 0; padding: 0; border: 0; }
+.form-legend { width: auto; margin-bottom: 16px; font-size: 14px; font-weight: 600; }
+.field-error { color: #b42318; font-size: 12px; }
+.profile-form input[aria-invalid='true'] { border-color: #b42318; }
+.save-options { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 22px; }
+.field label { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+.profile-form input:focus { outline: 2px solid #80b4ff; outline-offset: 2px; }
+.modal-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 18px; border-top: 1px solid #edf1f7; }
+.saved-message { padding: 12px; border-radius: 8px; background: #effaf3; color: #17613d; }
+.error-message { padding: 12px; border-radius: 8px; background: #fff1f0; color: #b42318; }
+details { margin-top: 16px; padding-top: 14px; border-top: 1px solid #edf1f7; }
+summary { width: fit-content; color: #2864dc; cursor: pointer; font-size: 13px; font-weight: 600; }
+pre { overflow-x: auto; padding: 18px; border-radius: 10px; background: #172033; color: #dce8ff; font-size: 12px; line-height: 1.8; }
+@media (max-width: 520px) { .modal-demo-card { padding: 18px; } h2 { font-size: 20px; } }

@@ -1,0 +1,58 @@
+<section class="ux-card" id="large-form-demo">
+    <p class="eyebrow">FORM LỚN · UPDATEON CHANGE / BLUR · VALIDATION</p>
+    <h2>Gõ ngay, cập nhật model và validate khi nào?</h2>
+    <p>Nhập từng ký tự ở hai ô rồi bấm Tab. Bộ đếm bao gồm lần khởi tạo. Username cần ít nhất 3 ký tự; “admin” là tên đã tồn tại trong API giả lập.</p>
+    <div class="comparison-grid">
+        <article class="comparison-panel">
+            <h3>updateOn: 'change'</h3>
+            <label class="field" for="compare-change">Username
+                <input nz-input id="compare-change" [formControl]="changeControl" autocomplete="off" />
+            </label>
+            <p>Model: <code>{{ modelValues().change || '(rỗng)' }}</code></p>
+            <p>Validation sync: {{ validationCounts().change }} · Request giả lập: {{ requestCounts().change }}</p>
+            <p role="status">Trạng thái: {{ statuses().change }}</p>
+            @if (changeControl.touched && changeControl.invalid) { <p class="field-error">{{ changeControl.hasError('reserved') ? 'Tên admin đã được dùng.' : 'Nhập ít nhất 3 ký tự.' }}</p> }
+        </article>
+        <article class="comparison-panel">
+            <h3>updateOn: 'blur'</h3>
+            <label class="field" for="compare-blur">Username
+                <input nz-input id="compare-blur" [formControl]="blurControl" autocomplete="off" />
+            </label>
+            <p>Model: <code>{{ modelValues().blur || '(rỗng)' }}</code></p>
+            <p>Validation sync: {{ validationCounts().blur }} · Request giả lập: {{ requestCounts().blur }}</p>
+            <p role="status">Trạng thái: {{ statuses().blur }}</p>
+            @if (blurControl.touched && blurControl.invalid) { <p class="field-error">{{ blurControl.hasError('reserved') ? 'Tên admin đã được dùng.' : 'Nhập ít nhất 3 ký tự.' }}</p> }
+        </article>
+    </div>
+    <p class="tip">Ô bên phải vẫn nhận ký tự ngay. Model, valueChanges và validation chờ mất focus. Hai ô cùng debounce async validator 250ms và giả lập API 400ms; blur không phải debounce. setValue/patchValue vẫn cập nhật bằng code ngay. Ô tìm kiếm nên dùng change + debounce để phản hồi khi gõ; blur phù hợp username/email/mã số cần kiểm tra sau khi nhập xong.</p>
+
+    <h3>1.000 trường logic, chỉ tạo 25 controls cho nhóm đang mở</h3>
+    <div class="actions">
+        <button nz-button nzType="primary" (click)="activate(0)" data-action="open-form-group">Mở nhóm 1</button>
+        <label for="large-form-group">Chuyển nhóm</label>
+        <nz-select nzId="large-form-group" [ngModel]="activeGroup()" (ngModelChange)="activate($event)" nzPlaceHolder="Chọn nhóm">
+            @for (group of groups; track group) { <nz-option [nzValue]="group" [nzLabel]="'Nhóm ' + (group + 1)"></nz-option> }
+        </nz-select>
+        <button nz-button (click)="validateAll()" data-action="validate-all-draft">Kiểm tra toàn bộ draft</button>
+        <button nz-button (click)="clearDraft()" data-action="clear-form-draft">Xóa draft</button>
+    </div>
+    <p class="tip">Controls của form lớn đang sống: {{ fields().length }} / 1.000 trường logic · Draft có {{ draftCount() }} giá trị. Hai controls so sánh phía trên được tính riêng.</p>
+    @if (activeGroup() !== null) {
+        <form #groupElement [formGroup]="groupForm" (ngSubmit)="saveCurrent()" data-demo="paged-large-form">
+            <div class="group-fields">
+                @for (field of fields(); track field.id) {
+                    <div class="field">
+                        <label [attr.for]="'large-form-' + field.id">Trường {{ field.id + 1 }} {{ field.required ? '(bắt buộc)' : '(tùy chọn)' }}</label>
+                        <input nz-input [id]="'large-form-' + field.id" [formControlName]="field.key"
+                            [attr.aria-invalid]="groupForm.controls[field.key].invalid && groupForm.controls[field.key].touched" />
+                        @if (groupForm.controls[field.key].invalid && groupForm.controls[field.key].touched) { <span class="field-error">Nhập ít nhất 2 ký tự{{ field.required ? ', không để trống' : '' }}.</span> }
+                    </div>
+                }
+            </div>
+            <div class="actions"><button nz-button type="submit" data-action="save-current-group">Giữ draft nhóm hiện tại / Enter</button></div>
+        </form>
+    }
+    <p class="feedback" role="status">{{ feedback() }}</p>
+    <p class="tip">Chuyển nhóm sẽ blur ô đang nhập để chốt giá trị rồi lưu draft trước khi tháo controls. Nút giữ draft cũng làm vậy khi Enter-submit chưa làm ô mất focus. Demo lưu trong RAM; sản phẩm thực cần chiến lược lưu nháp, lỗi mạng và bảo vệ dữ liệu phù hợp.</p>
+    <details><summary>Xem code và các điểm dễ hiểu nhầm về blur</summary><pre>{{ code }}</pre></details>
+</section>

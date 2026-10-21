@@ -1,0 +1,128 @@
+<app-modal-focus-demo></app-modal-focus-demo>
+<app-optimistic-ux></app-optimistic-ux>
+<app-large-list-demo></app-large-list-demo>
+<app-folder-browser-demo></app-folder-browser-demo>
+<app-workflow-ux-lab></app-workflow-ux-lab>
+
+<section class="lab-card" id="dynamic-views">
+    <p class="eyebrow">TÌNH HUỐNG 03 · TEMPLATE REF / EMBEDDED VIEW</p>
+    <h2>Tạo thêm view hay cập nhật view đang có?</h2>
+    <p class="intro">Bấm An, Bình rồi An. Bên trái tạo thêm view mỗi lần; bên phải giữ một view và đổi context. Quan sát ID view và số view đang gắn.</p>
+    <div class="actions">
+        <button *ngFor="let person of people" nz-button (click)="showPerson(person)" [attr.data-person-id]="person.id">Xem {{ person.name }}</button>
+        <button nz-button [disabled]="!selectedPerson" (click)="toggleDetachedView()" data-action="detach-view">{{ isViewDetached ? 'Insert lại view phải' : 'Detach view phải' }}</button>
+        <button nz-button nzDanger (click)="clearViews()" data-action="clear-views">Clear / hủy các view</button>
+    </div>
+    <div class="two-columns">
+        <article class="experiment warning-panel" data-demo="append-views">
+            <h3>Tạo thêm mỗi lần <span class="badge">{{ appendViewCount }} view</span></h3>
+            <p class="muted">TemplateRef.createEmbeddedView() + insert(). Demo giữ tối đa 5 view; nếu không giới hạn, DOM có thể tăng mãi.</p>
+            <div class="view-slot"><ng-container #appendSlot></ng-container></div>
+        </article>
+        <article class="experiment success-panel" data-demo="reuse-view">
+            <h3>Tái sử dụng <span class="badge">{{ reuseViewCount }} view đang gắn</span></h3>
+            <p class="muted">ViewContainerRef.createEmbeddedView() một lần, sau đó cập nhật context và markForCheck().</p>
+            <div class="view-slot"><ng-container #reuseSlot></ng-container></div>
+            <p *ngIf="isViewDetached" class="notice">View đã detach: không hiện trên màn hình nhưng vẫn còn sống. Bấm insert lại hoặc clear để hủy.</p>
+        </article>
+    </div>
+    <ng-template #detailTemplate let-person let-viewId="viewId">
+        <div class="detail-view" [attr.data-view-id]="viewId">
+            <span class="view-id">View #{{ viewId }}</span>
+            <strong>{{ person.name }}</strong>
+            <span>{{ person.department }} · ID {{ person.id }}</span>
+        </div>
+    </ng-template>
+    <p class="lesson">Clear/remove hủy view; detach chỉ gỡ view. View đã detach cần được destroy khi hết dùng. Trường hợp chỉ hiển thị template theo dữ liệu thường có thể dùng ngTemplateOutlet.</p>
+    <details><summary>Xem code tạo, cập nhật và hủy view</summary><pre>{{ viewCode }}</pre></details>
+</section>
+
+<section class="lab-card" id="render-calculations">
+    <p class="eyebrow">TÌNH HUỐNG 04 · HÀM / PURE PIPE / COMPUTED</p>
+    <h2>Cùng một kết quả, khác số lần tính lại</h2>
+    <p class="intro">Cả ba cách đều trim và chuyển chữ thường. Thí nghiệm đo một số lượt kiểm tra view có giới hạn, không phải benchmark thời gian chạy.</p>
+    <label class="input-label" for="lab-text">Chuỗi đầu vào</label>
+    <input nz-input id="lab-text" [ngModel]="text()" (ngModelChange)="text.set($event)" />
+    <div class="actions">
+        <button nz-button nzType="primary" (click)="runChecks()" data-action="same-input">Giữ input · kiểm tra 10 lần</button>
+        <button nz-button (click)="runChecks(true)" data-action="change-input">Đổi input · kiểm tra 1 lần</button>
+    </div>
+    <p class="feedback" aria-live="polite">{{ calculationMessage }}</p>
+    <div class="three-columns">
+        <article class="experiment" data-demo="method-calculation">
+            <h3>Hàm trong template</h3>
+            <p class="result">{{ normalizeWithMethod(text()) }}</p>
+            <strong class="count">{{ calculationResult?.method ?? '—' }}</strong>
+            <small>lần tính trong thí nghiệm</small>
+        </article>
+        <article class="experiment" data-demo="pipe-calculation">
+            <h3>Pure pipe</h3>
+            <p class="result">{{ text() | labNormalize }}</p>
+            <strong class="count">{{ calculationResult?.pipe ?? '—' }}</strong>
+            <small>lần tính trong thí nghiệm</small>
+        </article>
+        <article class="experiment" data-demo="computed-calculation">
+            <h3>Computed signal</h3>
+            <p class="result">{{ normalizedComputed() }}</p>
+            <strong class="count">{{ calculationResult?.computed ?? '—' }}</strong>
+            <small>lần tính trong thí nghiệm</small>
+        </article>
+    </div>
+    <p class="lesson">Input giữ nguyên: dự kiến 10 / 0 / 0. Input đổi: dự kiến 1 / 1 / 1. Bộ đếm chỉ phục vụ minh họa và được chụp sau mỗi thí nghiệm. Hàm sự kiện (click), trackBy và phép kiểm tra Set.has() nhỏ vẫn có thể dùng bình thường.</p>
+    <details><summary>Xem code và lưu ý tham chiếu mảng/object</summary><pre>{{ calculationCode }}</pre></details>
+</section>
+
+<section class="lab-card" id="lifecycle-cleanup">
+    <p class="eyebrow">TÌNH HUỐNG 05 · DỌN SUBSCRIPTION</p>
+    <h2>Đóng component, timer có thực sự dừng?</h2>
+    <p class="intro">Mở timer, chờ vài giây rồi đọc tổng tick. Đóng timer, đợi và đọc lại: số tick phải giữ nguyên. Mở lại tạo một timer mới.</p>
+    <div class="actions">
+        <button nz-button nzType="primary" (click)="toggleTicker()" data-action="toggle-ticker">{{ tickerOpen ? 'Đóng / hủy component timer' : 'Mở component timer' }}</button>
+        <button nz-button (click)="captureTicks()" data-action="read-ticks">Đọc tổng tick</button>
+        <span class="badge">Tổng tick đã đọc: {{ tickerSnapshot }}</span>
+    </div>
+    <app-lifecycle-ticker *ngIf="tickerOpen"></app-lifecycle-ticker>
+    <p *ngIf="!tickerOpen" class="placeholder">Component timer chưa được mở hoặc đã bị hủy.</p>
+    <p class="lesson">Ví dụ dùng takeUntilDestroyed. Chỉ ẩn bằng CSS hoặc giữ nội dung drawer đang sống thì timer chưa tự dừng; cần quản lý thêm trạng thái mở/đóng.</p>
+    <details><summary>Xem code cleanup</summary><pre>{{ cleanupCode }}</pre></details>
+</section>
+
+<section class="lab-card" id="lazy-chunk">
+    <p class="eyebrow">TÌNH HUỐNG 06 · LAZY CHUNK THẬT</p>
+    <h2>Chỉ tải component báo cáo khi bấm nút</h2>
+    <p class="intro">Mở DevTools → Network → lọc JS rồi bấm nút. Component standalone dưới đây nằm trong khối defer và được tải riêng nếu chưa có trong cache.</p>
+    <div class="actions"><button #loadReportButton nz-button nzType="primary" data-action="load-report">Tải báo cáo bằng defer</button></div>
+    @defer (on interaction(loadReportButton)) {
+        <app-lazy-report></app-lazy-report>
+    } @placeholder {
+        <div class="placeholder" data-demo="report-placeholder">Chưa dựng component báo cáo. Chưa cần tải phần code riêng của nó.</div>
+    } @loading (minimum 200ms) {
+        <div class="placeholder" role="status">Đang tải chunk báo cáo…</div>
+    } @error {
+        <div class="error-message" role="alert">Không tải được chunk. Kiểm tra kết nối rồi tải lại trang.</div>
+    }
+    <p class="lesson">Hash trong tên file phục vụ cache; namedChunks: false không tự làm ứng dụng nhẹ hơn. Thư viện đã dùng ở màn hình khác có thể nằm trong chunk dùng chung.</p>
+    <details><summary>Xem cú pháp defer</summary><pre>{{ lazyCode }}</pre></details>
+    <details><summary>Xem cấu hình build và import hỗ trợ tree shaking</summary><pre>{{ buildCode }}</pre></details>
+</section>
+
+<section class="lab-card" id="gzip-lab">
+    <p class="eyebrow">TÌNH HUỐNG 07 · MINIFY / GZIP / DUNG LƯỢNG TẢI</p>
+    <h2>Nén thật một mẫu JS/CSS bằng gzip</h2>
+    <p class="intro">Mẫu dữ liệu có nhiều đoạn lặp để dễ thấy tác dụng của gzip. Kết quả đo dưới đây chỉ thuộc mẫu này, không phải dung lượng bundle production của ứng dụng.</p>
+    <div class="actions"><button nz-button nzType="primary" [nzLoading]="isCompressing" (click)="compressSample()" data-action="compress">Nén mẫu bằng CompressionStream</button></div>
+    <div class="three-columns compression-results">
+        <article class="experiment"><h3>JS/CSS mẫu</h3><strong class="count">{{ sampleBytes | number:'1.0-0' }}</strong><small>byte UTF-8 trước nén</small></article>
+        <article class="experiment"><h3>Sau gzip</h3><strong class="count">{{ compressionResult ? (compressionResult.bytes | number:'1.0-0') : '—' }}</strong><small>byte sau nén thực tế</small></article>
+        <article class="experiment"><h3>Giảm dung lượng mẫu</h3><strong class="count">{{ compressionResult ? compressionResult.savedPercent + '%' : '—' }}</strong><small>tùy mức lặp của dữ liệu</small></article>
+    </div>
+    <p *ngIf="compressionError" class="error-message" role="alert">{{ compressionError }}</p>
+    <div class="techniques">
+        <p><strong>Tree shaking</strong><span>Loại bỏ code không dùng, nếu bundler xác định được.</span></p>
+        <p><strong>Minify</strong><span>Rút gọn biểu diễn JS/CSS.</span></p>
+        <p><strong>Lazy loading</strong><span>Chưa tải phần code chưa cần lúc mở trang.</span></p>
+        <p><strong>Gzip / Brotli</strong><span>Nén dữ liệu truyền qua mạng; không giảm số control đang render.</span></p>
+    </div>
+    <p class="lesson">Demo nén trong trình duyệt không bật gzip cho website. Khi triển khai, cần cấu hình static server/CDN và kiểm tra Content-Encoding trong Network. Builder application hiện tại không tự chạy custom-webpack.config.js.</p>
+    <details><summary>Xem cấu hình gzip khi triển khai</summary><pre>{{ gzipCode }}</pre></details>
+</section>

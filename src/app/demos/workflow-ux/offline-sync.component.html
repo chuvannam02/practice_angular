@@ -1,0 +1,74 @@
+<section class="ux-card" id="offline-sync-demo">
+    <p class="eyebrow">HAI TAB · VERSION CONFLICT · IDEMPOTENCY · INDEXEDDB OUTBOX</p>
+    <h2>Mất mạng, mất phản hồi và hai tab cùng ghi</h2>
+    <p>Hai tab cùng trình duyệt/origin dùng chung kho giả lập. Mở sửa cùng một hồ sơ ở cả hai tab, rồi lưu hoặc xóa ở tab 1; tab 2 vẫn giữ bản nháp và version cũ để thử phát hiện xung đột.</p>
+    <div class="actions">
+        <a nz-button [href]="secondTabUrl" target="_blank" rel="noopener">Mở tab thứ hai</a>
+        <button nz-button [disabled]="!ready()" (click)="refresh()">Tải danh sách mới</button>
+        <label><input type="checkbox" [checked]="mockOffline()" (change)="toggleOffline($any($event.target).checked)" /> Giả lập mất mạng tại tab này</label>
+        <label><input type="checkbox" [checked]="loseNextReply()" (change)="loseNextReply.set($any($event.target).checked)" /> Mất phản hồi sau lần tạo tiếp theo</label>
+    </div>
+    <p class="tip">{{ canSend() ? 'Đang cho phép gửi' : 'Đang offline / tạm ngừng gửi' }} · Tab {{ tabId.slice(0, 8) }}. navigator.onLine chỉ là tín hiệu gợi ý; API thật vẫn có thể lỗi khi trình duyệt báo online.</p>
+    @if (remoteChanged()) { <p class="feedback" role="status">Tab khác vừa thay đổi dữ liệu. Danh sách đã được đọc lại; nội dung và version của form đang sửa được giữ nguyên.</p> }
+    @if (error()) { <p class="error-box" role="alert">{{ error() }}</p> }
+    @if (message()) { <p class="feedback" role="status">{{ message() }}</p> }
+    <div class="comparison-grid">
+        <form class="comparison-panel" (submit)="$event.preventDefault(); create()">
+            <h3>Tạo hồ sơ</h3>
+            <label class="field" for="offline-create-title">Tên hồ sơ
+                <input nz-input id="offline-create-title" [formControl]="newTitle" [readOnly]="saving()" maxlength="120" placeholder="Ví dụ: Đề nghị mua màn hình" />
+            </label>
+            @if (newTitle.touched && newTitle.invalid) { <p class="field-error">Cần nhập tên, tối đa 120 ký tự.</p> }
+            <div class="actions"><button nz-button nzType="primary" type="submit" [nzLoading]="saving() || syncing()" [disabled]="!ready()">{{ canSend() ? 'Tạo và đồng bộ' : 'Lưu vào hàng đợi' }}</button></div>
+            <p class="tip">Chỉ xóa nội dung ô nhập sau khi IndexedDB đã commit lệnh. Payload của lệnh đã xếp hàng được giữ nguyên; retry sử dụng lại key.</p>
+        </form>
+        <div class="comparison-panel">
+            <h3>Hàng đợi bền vững · {{ jobs().length }}/50</h3>
+            <button nz-button [nzLoading]="syncing()" [disabled]="!canSend() || !ready() || saving()" (click)="drain()">Đồng bộ / retry cùng key</button>
+            <ul class="outbox-list">
+                @for (job of jobs(); track job.key) {
+                    <li>
+                        <strong>{{ job.title }}</strong> · {{ job.leaseOwner ? 'Đang gửi ở một tab' : job.status === 'unknown' ? 'Chưa xác nhận kết quả' : job.status === 'blocked' ? 'Cần xử lý lỗi' : 'Chờ gửi' }}
+                        <code>{{ job.key }}</code>
+                        <span class="tip">Đã thử {{ job.attempts }} lần. {{ job.error }}</span>
+                        @if (job.attempts === 0 && !job.leaseOwner) { <button nz-button nzSize="small" (click)="discard(job)">Bỏ lệnh chưa gửi</button> }
+                    </li>
+                } @empty { <li>Không có lệnh chờ.</li> }
+            </ul>
+        </div>
+    </div>
+    @if (!ready()) { <p role="status">Đang mở kho dữ liệu…</p> }
+    <div class="table-scroll">
+        <table class="guide">
+            <thead><tr><th scope="col">Hồ sơ giả lập</th><th scope="col">Version</th><th scope="col">Thao tác</th></tr></thead>
+            <tbody>
+                @for (record of records(); track record.id) {
+                    <tr><th scope="row">{{ record.title }}<small class="record-id">{{ record.id }}</small></th><td>{{ record.version }}</td><td>
+                        <div class="actions"><button nz-button [disabled]="saving()" (click)="edit(record)">Sửa</button><button nz-button nzDanger [disabled]="saving()" (click)="remove(record)">Xóa bản ghi demo</button></div>
+                    </td></tr>
+                } @empty { <tr><td colspan="3">Chưa có hồ sơ. Tạo một hồ sơ để thử bằng hai tab.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+    @if (editing(); as base) {
+        <form class="edit-draft" (submit)="$event.preventDefault(); saveEdit()">
+            <h3>Bản nháp đang sửa · expectedVersion = {{ base.version }}</h3>
+            <label class="field" for="offline-edit-title">Tên mới<input nz-input id="offline-edit-title" [formControl]="editTitle" [readOnly]="saving()" maxlength="120" /></label>
+            @if (editTitle.touched && editTitle.invalid) { <p class="field-error">Nhập tên từ 1 đến 120 ký tự.</p> }
+            <div class="actions"><button nz-button nzType="primary" type="submit" [nzLoading]="saving()">Lưu với version đã mở</button><button nz-button type="button" [disabled]="saving()" (click)="editing.set(null)">Đóng bản nháp demo</button></div>
+            <p class="tip">409: đã có bản mới; 410: đã bị xóa. Lỗi giữ nguyên bản nháp, không tự upsert hay tự ghi đè dữ liệu mới. Sao chép nội dung cần giữ rồi mở bản mới từ danh sách để so sánh.</p>
+        </form>
+    }
+    <details>
+        <summary>Cách thử và khi nào cần Service Worker?</summary>
+        <ol>
+            <li>Bật mất mạng → tạo hồ sơ: hàng đợi vẫn còn khi reload. Tắt mất mạng: tự đồng bộ khi lab đang mở. Lệnh mới chưa được tạo trên kho giả lập trước khi đồng bộ.</li>
+            <li>Bật mất phản hồi → tạo hồ sơ: danh sách đã có bản ghi nhưng lệnh còn “chưa xác nhận”. Retry: cùng ID, không thêm bản thứ hai.</li>
+            <li>Hai tab mở sửa cùng version: lần lưu đầu thành công, lần sau báo xung đột. Tab 1 xóa → tab 2 lưu: báo đã xóa, giữ bản nháp.</li>
+            <li>Hai lệnh tạo độc lập có key khác nhau có thể cùng thành công. Nếu nghiệp vụ cấm trùng mã hồ sơ, backend cần unique constraint riêng.</li>
+        </ol>
+        <p>IndexedDB lưu payload/outbox qua reload; không tự gửi request. Demo đồng bộ khi mở lại lab, có sự kiện online hoặc quay lại tab. Lease hết hạn sau 10 giây giúp phục hồi khi tab gửi bị đóng.</p>
+        <p>Service Worker hữu ích để cache app shell cho lần mở offline; Background Sync có thể gửi outbox khi trang đóng trên trình duyệt hỗ trợ, HTTPS/localhost và khi được hệ điều hành cho chạy. Không cam kết gửi ngay. Angular Service Worker không tự biến POST thành hàng đợi; cần logic mutation/retry riêng và vẫn phải có foreground fallback.</p>
+        <p class="tip">Đây là mock FE cùng origin, không kiểm chứng concurrency giữa thiết bị/người dùng. Backend thật phải kiểm tra quyền, version/ETag và lưu idempotency receipt cùng transaction nghiệp vụ. Storage có thể bị xóa/đầy; chỉ hiện đã lưu sau commit và không dùng IndexedDB làm nguồn dữ liệu duy nhất cho dữ liệu quan trọng.</p>
+    </details>
+</section>

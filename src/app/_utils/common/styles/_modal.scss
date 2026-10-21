@@ -1,0 +1,16 @@
+:root {
+    --app-modal-radius: 16px;
+}
+
+// Overlays are attached to body, so modal styles belong in the shared global stylesheet.
+.ant-modal-content {
+    border-radius: var(--app-modal-radius);
+}
+
+.ant-modal-header {
+    border-radius: var(--app-modal-radius) var(--app-modal-radius) 0 0;
+}
+
+.ant-modal-footer {
+    border-radius: 0 0 var(--app-modal-radius) var(--app-modal-radius);
+}

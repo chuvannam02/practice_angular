@@ -1,27 +1,28 @@
-# --- Stage 1: Builder ---
-FROM node:20-alpine AS builder
+# syntax=docker/dockerfile:1
+
+FROM node:22-alpine AS dependencies
 WORKDIR /app
+ENV NG_CLI_ANALYTICS=false \
+    npm_config_fetch_retries=5 \
+    npm_config_fetch_retry_mintimeout=20000 \
+    npm_config_fetch_retry_maxtimeout=120000
+# Only manifest changes invalidate the dependency layer.
 COPY package.json package-lock.json ./
-# Trước dòng RUN npm ci, thêm cấu hình này:
-RUN npm config set fetch-retries 5 && \
-    npm config set fetch-retry-mintimeout 20000 && \
-    npm config set fetch-retry-maxtimeout 120000
-RUN npm ci
-COPY . .
-# Build với custom webpack đã cấu hình ở trên
+RUN --mount=type=cache,id=practice-angular-npm,target=/root/.npm,sharing=locked \
+    npm ci --include=dev --prefer-offline --no-audit --no-fund
+
+FROM dependencies AS build
+COPY angular.json tsconfig.json tsconfig.app.json ./
+COPY src/ ./src/
+COPY public/ ./public/
 RUN npm run build -- --configuration production
 
-# --- Stage 2: Production (CHAINGUARD STATIC) ---
-# Image này cực nhẹ (~10MB), không shell, không root, chỉ có nginx binary
-FROM cgr.dev/chainguard/nginx:latest
-
-# Copy file config nginx
-# Lưu ý: Chainguard Nginx mặc định load config từ /etc/nginx/nginx.conf
-# Chúng ta sẽ overwrite hoặc include custom config
+# Standard Chainguard nginx has no shell/package manager.
+FROM cgr.dev/chainguard/nginx:latest AS runtime
 COPY nginx-custom.conf /etc/nginx/nginx.conf
-
-# Copy source code đã build (bao gồm cả file .br .gz)
-COPY --from=builder /app/dist/practice_angular /usr/share/nginx/html
-
-# Mặc định Chainguard chạy user 'nginx' (uid 65532), cổng 8080.
-# Không cần lệnh USER hay EXPOSE vì nó đã được hardcode trong base image an toàn.
+COPY --from=build /app/dist/practice_angular/browser/ /usr/share/nginx/html/
+USER 65532:65532
+EXPOSE 8080
+STOPSIGNAL SIGQUIT
+ENTRYPOINT ["/usr/sbin/nginx", "-e", "/dev/stderr"]
+CMD ["-g", "daemon off;"]

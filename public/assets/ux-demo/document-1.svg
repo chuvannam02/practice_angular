@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750" role="img" aria-label="Purchase request">
+<rect width="1200" height="750" rx="24" fill="#edf3fa"/><rect x="260" y="70" width="680" height="610" rx="18" fill="white" stroke="#ccd9eb" stroke-width="3"/>
+<rect x="300" y="112" width="600" height="90" rx="10" fill="#2864dc"/><text x="330" y="166" fill="white" font-family="sans-serif" font-size="32">Purchase request</text>
+<text x="310" y="252" fill="#172033" font-family="sans-serif" font-size="23">LOCAL DEMO / DOCUMENT 01</text>
+<g fill="#dce6f3"><rect x="310" y="290" width="500" height="18" rx="6"/><rect x="310" y="334" width="555" height="18" rx="6"/><rect x="310" y="378" width="430" height="18" rx="6"/></g>
+<rect x="310" y="438" width="550" height="118" rx="12" fill="#f4f7fc" stroke="#dce6f3"/><path d="M340 526L420 480L510 510L610 465L700 488L830 454" fill="none" stroke="#2864dc" stroke-width="9"/>
+<rect x="310" y="600" width="230" height="28" rx="10" fill="#2864dc" opacity=".22"/><text x="600" y="624" fill="#62708a" font-family="sans-serif" font-size="19">Preview on demand</text></svg>

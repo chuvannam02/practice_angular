@@ -1,0 +1,122 @@
+<section class="practice-card">
+    <p class="eyebrow">TÌNH HUỐNG 01 · MASTER / DETAIL</p>
+    <h2>Hai bảng ghép sát nhau · chọn dòng để tải danh sách</h2>
+    <p class="intro">
+        Hàng đầu là tiêu đề cột, cột đầu là tiêu đề dòng. Tick checkbox cạnh tên
+        khách ở bảng trái để tải đơn hàng ở bảng phải. Thử chọn An rồi chọn Bình
+        thật nhanh: kết quả của An sẽ bị hủy.
+    </p>
+    <div class="joined-tables-scroll">
+      <div class="joined-tables" data-demo="joined-master-detail">
+        <article class="joined-pane" data-panel="customers">
+            <div class="joined-heading"><h3>Bảng A · Khách hàng</h3></div>
+            <nz-table #customersTable [nzData]="customers" [nzShowPagination]="false" nzSize="small">
+                <thead><tr><th scope="col">Chọn / Khách hàng</th><th scope="col">Công ty</th></tr></thead>
+                <tbody>
+                    <tr *ngFor="let customer of customersTable.data; trackBy: trackById"
+                        [class.selected-row]="selectedCustomer?.id === customer.id">
+                        <th scope="row">
+                            <div class="row-heading">
+                                <label nz-checkbox [nzChecked]="selectedCustomer?.id === customer.id"
+                                    [nzId]="'customer-checkbox-' + customer.id" [attr.for]="'customer-checkbox-' + customer.id"
+                                    (nzCheckedChange)="selectCustomer(customer, $event)">
+                                    {{ customer.name }}
+                                </label>
+                                <nz-spin *ngIf="ordersLoading && selectedCustomer?.id === customer.id"
+                                    nzSimple nzSize="small" aria-label="Đang tải danh sách của khách này"></nz-spin>
+                            </div>
+                        </th>
+                        <td>{{ customer.company }}</td>
+                    </tr>
+                </tbody>
+            </nz-table>
+        </article>
+        <article class="joined-pane orders-panel" data-panel="orders">
+            <div class="joined-heading">
+                <h3>Bảng B · Đơn hàng</h3>
+                <span class="counter">{{ detailsRequestCount }} lượt tải</span>
+            </div>
+            <nz-table #ordersTable [nzData]="orders" [nzShowPagination]="false"
+                [nzLoading]="ordersLoading" nzSize="small"
+                [nzNoResult]="ordersLoading ? 'Đang tải đơn hàng…' : selectedCustomer ? (ordersError ? 'Tải thất bại' : 'Khách chưa có đơn hàng') : 'Tick một khách ở cột đầu bảng A'">
+                <thead><tr><th scope="col">Mã đơn</th><th scope="col">Số tiền</th></tr></thead>
+                <tbody>
+                    <tr *ngFor="let order of ordersTable.data; trackBy: trackById">
+                        <th scope="row">{{ order.code }}</th><td>{{ order.amount | number:'1.0-0' }} đ</td>
+                    </tr>
+                </tbody>
+            </nz-table>
+        </article>
+      </div>
+    </div>
+    <div class="joined-toolbar">
+        <p class="selection-summary" aria-live="polite">
+            {{ ordersLoading ? 'Đang tải đơn hàng của ' + selectedCustomer?.name + '…' : selectedCustomer ? 'Đơn hàng của ' + selectedCustomer.name : 'Chọn một khách tại cột đầu. Bỏ tick để xóa danh sách bên phải.' }}
+        </p>
+        <div class="actions">
+            <button nz-button [disabled]="!selectedCustomer || ordersLoading" (click)="reloadOrders()">Tải lại đơn hàng</button>
+            <button nz-button nzDanger [disabled]="!selectedCustomer || ordersLoading" (click)="reloadOrders(true)">Thử lỗi API</button>
+        </div>
+    </div>
+    <div *ngIf="ordersError" class="error-message" role="alert">{{ ordersError }}</div>
+    <p class="lesson">Áp dụng: khách hàng → đơn hàng, phòng ban → nhân viên, vai trò → quyền truy cập.</p>
+    <details><summary>Xem ý tưởng RxJS</summary><pre>{{ masterDetailCode }}</pre></details>
+</section>
+
+<section class="practice-card">
+    <p class="eyebrow">TÌNH HUỐNG 02 · GIỮ COMPONENT KHI CẬP NHẬT</p>
+    <h2>Cùng một API, khác cách giữ các dòng</h2>
+    <p class="intro">
+        Hai bảng dùng cùng dữ liệu. Sau mỗi lần lưu hoặc tải lại, API giả lập trả về
+        <strong>object mới cho toàn bộ danh sách</strong>. Thử bật/tắt switch ở bất kỳ bảng nào.
+    </p>
+    <div class="actions comparison-actions">
+        <button nz-button nzType="primary" [nzLoading]="isReloadingUsers"
+            [disabled]="pendingUserIds.size > 0" (click)="reloadUsers()">Tải lại cả hai bảng</button>
+        <button nz-button [disabled]="isReloadingUsers || pendingUserIds.size > 0"
+            (click)="reloadUsers(true)">Đảo thứ tự và tải lại</button>
+        <button nz-button [nzDanger]="failNextSave" [disabled]="pendingUserIds.size > 0"
+            (click)="failNextSave = !failNextSave">{{ failNextSave ? 'Đã bật lỗi lưu lần tới' : 'Thử lỗi lưu lần tới' }}</button>
+        <span class="counter">{{ reloadCount }} lần tải lại</span>
+    </div>
+    <p class="feedback" aria-live="polite">{{ usersMessage }}</p>
+    <div class="table-pair">
+        <article class="table-panel untracked-panel" data-demo="without-track-by">
+            <span class="mode-badge warning">Không có trackBy</span>
+            <h3>Theo tham chiếu object</h3>
+            <nz-table #withoutTable [nzData]="usersWithoutTrackBy" [nzShowPagination]="false" nzSize="small">
+                <thead><tr><th>ID</th><th>Nhân viên</th><th>Hoạt động / ID DOM</th></tr></thead>
+                <tbody>
+                    <tr *ngFor="let user of withoutTable.data" [attr.data-user-id]="user.id">
+                        <td>{{ user.id }}</td><td>{{ user.name }}</td>
+                        <td><app-demo-switch [enabled]="user.enabled" [loading]="pendingUserIds.has(user.id)" [label]="'Trạng thái của ' + user.name"
+                            (enabledChange)="updateUser(user.id, $event)"></app-demo-switch></td>
+                    </tr>
+                </tbody>
+            </nz-table>
+            <p class="table-caption">Object mới → tạo lại các dòng. DOM # đổi và nhãn vàng sáng lại ở mọi dòng.</p>
+        </article>
+        <article class="table-panel tracked-panel" data-demo="with-track-by">
+            <span class="mode-badge success">Có trackById</span>
+            <h3>Theo khóa id ổn định</h3>
+            <nz-table #withTable [nzData]="usersWithTrackBy" [nzShowPagination]="false" nzSize="small">
+                <thead><tr><th>ID</th><th>Nhân viên</th><th>Hoạt động / ID DOM</th></tr></thead>
+                <tbody>
+                    <tr *ngFor="let user of withTable.data; trackBy: trackById" [attr.data-user-id]="user.id">
+                        <td>{{ user.id }}</td><td>{{ user.name }}</td>
+                        <td><app-demo-switch [enabled]="user.enabled" [loading]="pendingUserIds.has(user.id)" [label]="'Trạng thái của ' + user.name"
+                            (enabledChange)="updateUser(user.id, $event)"></app-demo-switch></td>
+                    </tr>
+                </tbody>
+            </nz-table>
+            <p class="table-caption">Cùng id → giữ dòng và switch. DOM # không đổi, kể cả khi đảo thứ tự.</p>
+        </article>
+    </div>
+    <div class="lesson">
+        Màu vàng là hiệu ứng minh họa lúc component được tạo, giúp nhìn rõ việc tạo lại DOM.
+        Switch thực tế có thể nháy khác nhau tùy animation. Chỉ tạo mảng mới bằng
+        <code>[...rows]</code> mà giữ nguyên object thì chưa làm mọi dòng bị tạo lại.
+        <code>trackBy</code> cũng không ngăn việc tạo lại nếu bạn xóa cả bảng bằng <code>*ngIf</code>.
+    </div>
+    <details><summary>Xem cách viết trackBy và loading theo dòng</summary><pre>{{ trackingCode }}</pre></details>
+</section>

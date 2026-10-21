@@ -1,0 +1,49 @@
+:host { display: block; }
+.ux-card { margin-bottom: 24px; padding: 28px; border: 1px solid #dce7f5; border-radius: 16px; background: #fff; color: #172033; box-shadow: 0 8px 28px rgb(23 32 51 / 6%); }
+.eyebrow { margin: 0 0 8px; color: #2864dc; font-size: 12px; font-weight: 700; }
+h2 { margin: 0 0 12px; font-size: 24px; }
+h3 { margin-top: 0; font-size: 17px; }
+p, li { line-height: 1.8; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 16px 0; }
+.tip { color: #52637d; font-size: 13px; }
+.error-box { padding: 14px; border: 1px solid #ffa39e; border-radius: 10px; background: #fff1f0; color: #a61d24; }
+.feedback { padding: 12px; border-radius: 10px; background: #edf5ff; color: #355b95; }
+.gallery-scroll { max-height: 350px; overflow: auto; border: 1px solid #dce7f5; border-radius: 12px; }
+.gallery-grid, .comparison-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 16px; }
+.image-card { min-width: 0; padding: 12px; border: 1px solid #e3eaf5; border-radius: 10px; }
+.thumb-frame { position: relative; aspect-ratio: 8 / 5; background: #edf2f8; }
+.thumb-frame img { display: block; width: 100%; height: auto; }
+.image-hidden { visibility: hidden; }
+.image-skeleton { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; padding: 12px; color: #52637d; text-align: center; border-radius: 8px; background: #edf2f8; }
+.image-skeleton.is-loading { background: linear-gradient(100deg, #edf2f8 25%, #dce7f5 45%, #edf2f8 65%); background-size: 250% 100%; animation: image-shimmer 1.3s linear infinite; }
+@keyframes image-shimmer { to { background-position: -250% 0; } }
+@media (prefers-reduced-motion: reduce) { .image-skeleton.is-loading { animation: none; } }
+.image-fallback { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; padding: 12px; text-align: center; }
+.file-zone { display: grid; gap: 10px; padding: 20px; border: 2px dashed #9bb7df; border-radius: 12px; background: #f8faff; }
+.full-preview { display: block; max-width: 100%; max-height: 65vh; margin: auto; object-fit: contain; }
+.pdf-preview { width: 100%; height: min(65vh, 720px); border: 1px solid #dce7f5; }
+.comparison-panel, .workflow-column { min-width: 0; padding: 16px; border: 1px solid #dce7f5; border-radius: 12px; background: #f8faff; }
+.field { display: grid; gap: 7px; }
+.field-error { color: #b42318; font-size: 12px; }
+.group-fields { max-height: 400px; overflow: auto; padding: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.workflow-board { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 16px; overflow-x: auto; }
+.workflow-column { min-height: 160px; }
+.task-card { padding: 12px; margin-bottom: 10px; border: 1px solid #cedbed; border-radius: 10px; background: #fff; }
+.task-card p { margin: 8px 0; }
+.task-card strong:focus { outline: 2px solid #2864dc; outline-offset: 3px; }
+.drag-handle { cursor: grab; padding: 4px 10px; margin-bottom: 8px; }
+.task-card .actions { gap: 6px; margin: 10px 0 0; }
+.cdk-drag-placeholder { opacity: .25; }
+.cdk-drag-preview { box-sizing: border-box; max-width: 300px; padding: 12px; border-radius: 10px; background: #edf5ff; box-shadow: 0 8px 22px rgb(23 32 51 / 20%); }
+.table-scroll { overflow-x: auto; }
+.outbox-list { padding-left: 20px; max-height: 320px; overflow: auto; }
+.outbox-list li { margin: 12px 0; }
+.outbox-list code, .outbox-list span, .record-id { display: block; overflow-wrap: anywhere; font-size: 12px; font-weight: 400; }
+.edit-draft { margin-top: 16px; padding: 20px; border: 1px solid #91caff; border-radius: 12px; background: #f0f7ff; }
+table.guide { width: 100%; min-width: 650px; border-collapse: collapse; font-size: 13px; }
+.guide th, .guide td { padding: 12px; border: 1px solid #dce7f5; text-align: left; vertical-align: top; line-height: 1.7; }
+.guide th { background: #f4f7fb; }
+details { margin-top: 16px; }
+summary { color: #2864dc; cursor: pointer; }
+pre { overflow-x: auto; padding: 16px; border-radius: 10px; background: #172033; color: #dce8ff; font-size: 12px; line-height: 1.7; }
+@media (max-width: 600px) { .ux-card { padding: 18px; } .gallery-grid, .comparison-grid, .group-fields { grid-template-columns: 1fr; } h2 { font-size: 20px; } }

@@ -5,6 +5,9 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { SelectScrollDirective } from './_utils/directive/select-scroll.directive';
+import { PracticalTablesComponent } from './demos/practical-tables/practical-tables.component';
+import { FrontendLabComponent } from './demos/frontend-lab/frontend-lab.component';
 import {
     EMPTY,
     Observable,
@@ -43,6 +46,9 @@ interface KeysetResponse {
         NzSelectModule,
         NzSpinModule,
         NzTagModule,
+        SelectScrollDirective,
+        PracticalTablesComponent,
+        FrontendLabComponent,
     ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
@@ -50,6 +56,7 @@ interface KeysetResponse {
 export class AppComponent implements OnInit, OnDestroy {
     readonly minSearchLength = 3;
     readonly pageSize = 20;
+
     keyword = '';
     selectedCategoryId: number | null = null;
     selectedCategory: DemoCategory | null = null;
@@ -59,6 +66,7 @@ export class AppComponent implements OnInit, OnDestroy {
     hasSearched = false;
     hasMore = false;
     hasLoadedOnce = false;
+
     private lastId: number | null = null;
     private searchVersion = 0;
     private readonly searchRequests$ = new Subject<string>();
@@ -116,6 +124,9 @@ export class AppComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+    }
+    trackByCategoryId(_index: number, category: DemoCategory): number {
+        return category.id;
     }
     get selectedCategoryOutsideResults(): DemoCategory | null {
         const selected = this.selectedCategory;
