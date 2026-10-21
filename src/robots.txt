@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /settings/
+Disallow: /logs/
+Disallow: /audit/
+Allow: /pages/welcome

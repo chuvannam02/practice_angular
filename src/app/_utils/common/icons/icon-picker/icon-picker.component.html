@@ -1,0 +1,72 @@
+<button nz-button nzType="primary" (click)="openModal()">
+    Select Icon
+</button>
+
+<nz-modal
+    [(nzVisible)]="isVisible"
+    nzTitle="Select an Icon"
+    (nzOnCancel)="handleCancel()"
+    nzWidth="800px"
+    [nzFooter]="null"
+>
+    <ng-container *nzModalContent>
+        <div class="picker-header">
+            <nz-input-group [nzPrefix]="suffixIconSearch">
+                <input
+                    type="text"
+                    nz-input
+                    [ngModel]="searchText"
+                    (ngModelChange)="onSearchChange($event)"
+                    placeholder="Search icon name..."
+                />
+            </nz-input-group>
+            <ng-template #suffixIconSearch>
+                <span nz-icon nzType="search" *ngIf="!isLoading"></span>
+                <span nz-icon nzType="loading" *ngIf="isLoading"></span>
+            </ng-template>
+        </div>
+
+        <nz-tabset
+            [(nzSelectedIndex)]="tabIndex"
+            (nzSelectChange)="onTabChange($event.tab.nzTitle)"
+        >
+            <nz-tab nzTitle="Outline"></nz-tab>
+            <nz-tab nzTitle="Solid"></nz-tab>
+            <nz-tab nzTitle="Mini"></nz-tab>
+        </nz-tabset>
+
+        <div class="icon-grid-wrapper">
+
+            <ng-container *ngIf="virtualRows.length > 0; else noData">
+                <cdk-virtual-scroll-viewport
+                    itemSize="90"
+                    minBufferPx="200"
+                    maxBufferPx="400"
+                    class="virtual-viewport"
+                >
+                    <div *cdkVirtualFor="let row of virtualRows" class="virtual-row">
+                        <div
+                            class="icon-item"
+                            *ngFor="let icon of row"
+                            (click)="selectIcon(icon)"
+                            title="{{icon}}"
+                        >
+                            <ng-icon [name]="icon" size="24px"></ng-icon>
+                            <span class="icon-name">{{ icon | slice:4 }}</span>
+                        </div>
+
+                        <div class="icon-item-placeholder" *ngFor="let i of [].constructor(COL_COUNT - row.length)"></div>
+                    </div>
+                </cdk-virtual-scroll-viewport>
+            </ng-container>
+
+            <ng-template #noData>
+                <div class="empty-state">
+                    <nz-empty [nzNotFoundContent]="isLoading ? 'Searching...' : 'No icons found'"></nz-empty>
+                </div>
+            </ng-template>
+
+        </div>
+
+    </ng-container>
+</nz-modal>

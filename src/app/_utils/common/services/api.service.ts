@@ -15,11 +15,13 @@ import {map} from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
+
     // constructor(private readonly http: HttpClient) {}
     private readonly http: HttpClient = inject(HttpClient);
+
     // --- QUẢN LÝ UPLOAD PROGRESS (Getter/Setter) ---
     // Dùng BehaviorSubject để lưu trữ trạng thái % upload hiện tại
-    private _uploadProgress$ = new BehaviorSubject<number>(0);
+    private readonly _uploadProgress$ = new BehaviorSubject<number>(0);
 
     /**
      * Getter: Lấy Observable để component có thể subscribe hiển thị thanh loading

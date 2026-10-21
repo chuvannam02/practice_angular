@@ -1,1 +1,77 @@
-<router-outlet></router-outlet>
+<main class="demo-page">
+    <section class="search-card">
+        <p class="eyebrow">ANGULAR + NG-ZORRO · FRONTEND DEMO</p>
+        <h1>Chọn danh mục</h1>
+        <p class="description">
+            Mở dropdown để tự tải {{ pageSize }} bản ghi đầu. Gõ tối thiểu
+            {{ minSearchLength }} ký tự để tìm kiếm từ server.
+        </p>
+        <nz-select
+            class="category-search"
+            [ngModel]="selectedCategoryId"
+            nzShowSearch
+            nzServerSearch
+            nzAllowClear
+            [nzLoading]="isSearching"
+            nzPlaceHolder="Ví dụ: điện tử, CAT-0012, kho"
+            [nzNotFoundContent]="
+                isSearching
+                    ? 'Đang tải danh mục…'
+                    : !hasSearched
+                      ? 'Nhập tối thiểu ' + minSearchLength + ' ký tự để tìm kiếm'
+                      : 'Không tìm thấy danh mục phù hợp'
+            "
+            (nzOpenChange)="onDropdownOpen($event)"
+            (nzOnSearch)="onSearch($event)"
+            (nzScrollToBottom)="onDropdownScrollToBottom()"
+            (ngModelChange)="onModelChange($event)"
+        >
+            <nz-option
+                *ngIf="selectedCategoryOutsideResults as category"
+                [nzValue]="category.id"
+                [nzLabel]="category.name + ' · ' + category.code"
+                [nzHide]="keyword.length > 0"
+            ></nz-option>
+            <nz-option
+                *ngFor="let category of categories"
+                [nzValue]="category.id"
+                [nzLabel]="category.name + ' · ' + category.code"
+            ></nz-option>
+            <nz-option
+                *ngIf="isSearching || isLoadingMore"
+                nzDisabled
+                nzCustomContent
+            >
+                <span class="select-footer"
+                    ><nz-spin nzSimple nzSize="small"></nz-spin
+                    >{{
+                        isSearching ? "Đang tải danh sách…" : "Đang tải thêm…"
+                    }}</span
+                >
+            </nz-option>
+            <nz-option
+                *ngIf="
+                    hasLoadedOnce &&
+                    !isSearching &&
+                    !isLoadingMore &&
+                    categories.length > 0 &&
+                    !hasMore
+                "
+                nzDisabled
+                nzLabel="Đã tải hết dữ liệu"
+            ></nz-option>
+        </nz-select>
+        <p
+            class="hint"
+            *ngIf="keyword.length > 0 && keyword.length < minSearchLength"
+        >
+            Cần thêm {{ minSearchLength - keyword.length }} ký tự để tìm kiếm.
+        </p>
+    </section>
+    <section class="explanation-card">
+        <strong>Dropdown flow:</strong> mở lần đầu → API <code>limit=20</code>;
+        kéo đáy dropdown → <code>nzScrollToBottom</code> +
+        <code>exhaustMap</code>; đổi từ khoá → <code>switchMap</code>, reset
+        cursor và hủy request cũ.
+    </section>
+</main>

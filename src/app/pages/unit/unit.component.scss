@@ -1,0 +1,27 @@
+.scroll-box {
+    height: 400px;
+    overflow-y: auto; /* Hiệu ứng cuộn khi list quá dài */
+    border: 1px solid #ddd;
+}
+li { padding: 8px; border-bottom: 1px solid #eee; list-style: none; }
+.loader { margin-top: 20px; color: blue; font-style: italic; }
+
+.viewport {
+    height: 400px; /* Bắt buộc phải có chiều cao */
+    width: 100%;
+    border: 1px solid #ccc;
+}
+
+.item {
+    height: 50px; /* Phải khớp với itemSize trong HTML */
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    border-bottom: 1px solid #eee;
+    box-sizing: border-box;
+}
+
+::ng-deep .hl {
+    background-color: yellow;
+    font-weight: bold;
+}

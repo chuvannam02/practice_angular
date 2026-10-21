@@ -17,7 +17,7 @@ export class AlertService {
      */
     private readonly defaultTitle = 'Thông báo';
 
-    constructor(private notification: NzNotificationService) {}
+    constructor(private readonly notification: NzNotificationService) {}
 
     /**
      * Generic notification method using default title
@@ -26,7 +26,7 @@ export class AlertService {
      * @param description - optional additional text
      * @param options - override NzNotificationDataOptions
      */
-    notify(
+    private notify(
         type: AlertType,
         message: string,
         description?: string,
@@ -40,6 +40,7 @@ export class AlertService {
                 nzPlacement: 'topRight',
                 nzPauseOnHover: true,
                 nzDuration: 3000,
+                nzAnimate: true,
                 ...options
             }
         );

@@ -8,6 +8,9 @@
 import { FormBuilder, Validators, FormGroup } from "@angular/forms";
 import { ZodTypeAny } from "zod";
 
+/**
+ * Hàm buildFormFromZod: Chuyển đổi Zod Schema thành Angular FormGroup
+ */
 export function buildFormFromZod<T extends ZodTypeAny>(
     fb: FormBuilder,
     schema: T

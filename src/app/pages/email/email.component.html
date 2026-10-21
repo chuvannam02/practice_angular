@@ -1,0 +1,200 @@
+<div class="email-page">
+    <!-- ===== FORM GỬI EMAIL ===== -->
+    <nz-card nzTitle="Gửi email mới" style="margin-bottom: 16px">
+        <form
+            nz-form
+            [formGroup]="form"
+            nzLayout="vertical"
+            (ngSubmit)="submit()"
+        >
+            <!-- Người nhận -->
+            <nz-form-item>
+                <nz-form-label nzRequired>Người nhận</nz-form-label>
+                <nz-form-control nzHasFeedback [nzErrorTip]="toErr">
+                    <input
+                        nz-input
+                        formControlName="to"
+                        placeholder="recipient@example.com"
+                    />
+                    <ng-template #toErr let-ctrl>
+                        <ng-container *ngIf="ctrl.errors?.['required']"
+                            >Vui lòng nhập email</ng-container
+                        >
+                        <ng-container *ngIf="ctrl.errors?.['email']"
+                            >Email không hợp lệ</ng-container
+                        >
+                    </ng-template>
+                </nz-form-control>
+            </nz-form-item>
+
+            <!-- Tiêu đề -->
+            <nz-form-item>
+                <nz-form-label nzRequired>Tiêu đề</nz-form-label>
+                <nz-form-control nzHasFeedback [nzErrorTip]="subjectErr">
+                    <input
+                        nz-input
+                        formControlName="subject"
+                        placeholder="Nhập tiêu đề email"
+                    />
+                    <ng-template #subjectErr let-ctrl>
+                        <ng-container *ngIf="ctrl.errors?.['required']"
+                            >Vui lòng nhập tiêu đề</ng-container
+                        >
+                        <ng-container *ngIf="ctrl.errors?.['maxlength']"
+                            >Tối đa 255 ký tự</ng-container
+                        >
+                    </ng-template>
+                </nz-form-control>
+            </nz-form-item>
+
+            <!-- Nội dung -->
+            <nz-form-item>
+                <nz-form-label>Nội dung</nz-form-label>
+                <nz-form-control>
+                    <textarea
+                        nz-input
+                        formControlName="body"
+                        [nzAutosize]="{ minRows: 4, maxRows: 10 }"
+                        placeholder="Nhập nội dung email..."
+                    >
+                    </textarea>
+                </nz-form-control>
+            </nz-form-item>
+
+            <!-- Upload attachment -->
+            <nz-form-item>
+                <nz-form-label>Đính kèm</nz-form-label>
+                <nz-form-control
+                    nzExtra="Hỗ trợ PDF, Excel, JPG, PNG — tối đa 10MB/file"
+                >
+                    <nz-upload
+                        [nzMultiple]="true"
+                        [nzBeforeUpload]="beforeUpload"
+                        [nzRemove]="removeFile"
+                        [nzFileList]="fileList"
+                    >
+                        <button nz-button type="button">
+                            <span nz-icon nzType="paper-clip"></span>
+                            Chọn file
+                        </button>
+                    </nz-upload>
+                </nz-form-control>
+            </nz-form-item>
+
+            <!-- Submit -->
+            <nz-form-item>
+                <nz-form-control>
+                    <button
+                        nz-button
+                        nzType="primary"
+                        type="submit"
+                        [nzLoading]="submitting"
+                    >
+                        <span nz-icon nzType="send"></span>
+                        Gửi email
+                    </button>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+    </nz-card>
+
+    <!-- ===== LỊCH SỬ GỬI EMAIL ===== -->
+    <nz-card nzTitle="Lịch sử gửi email">
+        <nz-table
+            [nzData]="history"
+            [nzTotal]="totalElements"
+            [nzPageIndex]="page + 1"
+            [nzPageSize]="pageSize"
+            [nzLoading]="tableLoading"
+            [nzFrontPagination]="false"
+            nzShowPagination
+            nzShowSizeChanger
+            [nzScroll]="{ x: '1100px', y: '500px' }"
+            [nzPageSizeOptions]="[10, 20, 50]"
+            (nzPageIndexChange)="onPageChange($event)"
+            (nzPageSizeChange)="pageSize = $event; onPageChange(1)"
+        >
+            <thead>
+                <tr>
+                    <th nzWidth="200px">Người nhận</th>
+                    <th>Tiêu đề</th>
+                    <th nzWidth="180px">Đính kèm</th>
+                    <th nzWidth="150px">Trạng thái</th>
+                    <th nzRight nzWidth="130px">Thời gian</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr *ngFor="let item of history; trackBy: trackByJobId">
+                    <td>{{ item.toAddress }}</td>
+
+                    <td>{{ item.subject }}</td>
+
+                    <td>
+                        <ng-container
+                            *ngIf="item.attachments?.length; else noAtt"
+                        >
+                            <nz-tag
+                                *ngFor="let att of item.attachments"
+                                [nz-tooltip]="
+                                    att.fileName +
+                                    ' (' +
+                                    fileSizeLabel(att.fileSize) +
+                                    ')'
+                                "
+                            >
+                                <span nz-icon nzType="paper-clip"></span>
+                                {{ att.fileName | slice: 0 : 12
+                                }}{{ att.fileName.length > 12 ? "…" : "" }}
+                            </nz-tag>
+                        </ng-container>
+                        <ng-template #noAtt>
+                            <span style="color: #bbb">—</span>
+                        </ng-template>
+                    </td>
+
+                    <td>
+                        <nz-badge
+                            [nzStatus]="statusColor(item.status)"
+                            [nzText]="statusLabel(item.status)"
+                        >
+                        </nz-badge>
+                        <div
+                            *ngIf="item.attemptCount > 1"
+                            style="
+                                font-size: 11px;
+                                color: #999;
+                                margin-top: 2px;
+                            "
+                        >
+                            Thử {{ item.attemptCount }} lần
+                        </div>
+                        <div
+                            *ngIf="
+                                item.status === 'FAILED' && item.errorMessage
+                            "
+                            nz-tooltip
+                            [nzTooltipTitle]="item.errorMessage"
+                            style="
+                                font-size: 11px;
+                                color: #ff4d4f;
+                                cursor: help;
+                                margin-top: 2px;
+                            "
+                        >
+                            <span nz-icon nzType="info-circle"></span> Chi tiết
+                            lỗi
+                        </div>
+                    </td>
+
+                    <td nzRight style="white-space: nowrap">
+                        {{ item.createdAt | date: "dd/MM/yyyy" }}<br />
+                        <small style="color: #999">{{
+                            item.createdAt | date: "HH:mm:ss"
+                        }}</small>
+                    </td>
+                </tr>
+            </tbody>
+        </nz-table>
+    </nz-card>
+</div>

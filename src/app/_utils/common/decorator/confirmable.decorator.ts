@@ -10,6 +10,8 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { firstValueFrom, isObservable } from 'rxjs';
 import {appInjector} from '../../app-injector';
+import {NzNotificationService} from 'ng-zorro-antd/notification';
+import {AlertService} from '../notification/AlertService';
 
 export interface ConfirmableOptions extends ModalOptions {
     title?: string;
@@ -42,7 +44,8 @@ export function Confirmable(options?: ConfirmableOptions) {
             }
 
             const modalService = appInjector.get(NzModalService);
-            const messageService = appInjector.get(NzMessageService);
+            // const messageService = appInjector.get(NzMessageService);
+            const notificationService = appInjector.get(AlertService);
 
             modalService.confirm({
                 nzTitle: options?.title || 'Xác nhận hành động',
@@ -76,12 +79,12 @@ export function Confirmable(options?: ConfirmableOptions) {
 
                         // Thành công
                         if (options?.successMessage) {
-                            messageService.success(options.successMessage);
+                            notificationService.success(options.successMessage);
                         }
                     } catch (error) {
                         // Thất bại
                         if (options?.errorMessage) {
-                            messageService.error(options.errorMessage);
+                            notificationService.error(options.errorMessage);
                         }
                         throw error; // Ném lỗi để console log ra ngoài nếu cần
                     }

@@ -1,0 +1,81 @@
+.picker-header {
+    margin-bottom: 16px;
+}
+
+.icon-grid-wrapper {
+    height: 400px; // Chiều cao tổng của khu vực cuộn
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+}
+
+// Cấu hình cho viewport của CDK
+.virtual-viewport {
+    height: 100%;
+    width: 100%;
+
+    // Scrollbar đẹp hơn (tuỳ chọn)
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 4px;
+    }
+}
+
+// Cấu hình 1 HÀNG trong virtual scroll
+.virtual-row {
+    display: flex;
+    justify-content: space-evenly; // Hoặc dùng gap
+    align-items: flex-start;
+    height: 90px; // !!! Bắt buộc khớp với itemSize trong HTML
+    padding: 5px 0;
+}
+
+// Cấu hình từng ô ICON
+.icon-item {
+    width: 110px; // Chiều rộng cố định
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        border-color: #3b82f6;
+        background-color: #eef2ff;
+        color: #3b82f6;
+    }
+
+    ng-icon {
+        margin-bottom: 8px;
+    }
+
+    .icon-name {
+        font-size: 11px;
+        color: #666;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding: 0 4px;
+    }
+}
+
+// Placeholder cho hàng cuối cùng để không bị vỡ layout flex
+.icon-item-placeholder {
+    width: 110px;
+    height: 80px;
+    visibility: hidden;
+}
+
+.empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}

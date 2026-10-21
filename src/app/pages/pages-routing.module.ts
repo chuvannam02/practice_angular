@@ -45,11 +45,35 @@ const routes: Routes = [
                 }
             },
             {
+                path: 'asset',
+                loadChildren: () => import('./asset/asset.module').then(m => m.AssetModule),
+                data: {
+                    title: 'Quản lý tài sản',
+                    breadcrumb: 'Quản lý tài sản'
+                }
+            },
+            {
+                path: 'email',
+                loadChildren: () => import('./email/email.module').then(m => m.EmailModule),
+                data: {
+                    title: 'Quản lý lịch sử gửi email',
+                    breadcrumb: 'Quản lý lịch sử gửi email'
+                }
+            },
+            {
                 path: 'log',
                 loadChildren: () => import('./log/log.module').then(m => m.LogModule),
                 data: {
                     title: 'Quản lý nhật ký',
                     breadcrumb: 'Quản lý nhật ký'
+                }
+            },
+            {
+                path: 'units',
+                loadChildren: () => import('./unit/unit.module').then(m => m.UnitModule),
+                data: {
+                    title: 'Quản lý đơn vị',
+                    breadcrumb: 'Quản lý đơn vị'
                 }
             }
         ]

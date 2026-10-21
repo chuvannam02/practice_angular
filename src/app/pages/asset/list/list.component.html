@@ -1,0 +1,385 @@
+<div style="padding: 24px">
+    <div
+        style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        "
+    >
+        <div>
+            <h2 style="margin: 0; font-weight: 600; color: #1e293b">
+                Assets Management
+            </h2>
+            <p style="margin: 0; color: #64748b">
+                Manage and track company assets
+            </p>
+        </div>
+        <button
+            nz-button
+            nzType="primary"
+            (click)="openCreateModal()"
+            style="background: #50b5ff; border: none; border-radius: 6px"
+        >
+            <span nz-icon nzType="plus"></span> New Asset
+        </button>
+    </div>
+
+    <div
+        style="
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            align-items: center;
+        "
+    >
+        <nz-input-group
+            [nzPrefix]="prefixIcon"
+            style="flex: 1; max-width: 500px; border-radius: 6px"
+        >
+            <input
+                type="text"
+                nz-input
+                [(ngModel)]="searchKeyword"
+                (ngModelChange)="loadAssets()"
+                placeholder="Search by asset ID or name..."
+            />
+        </nz-input-group>
+        <ng-template #prefixIcon
+            ><span nz-icon nzType="search" style="color: #bfbfbf"></span
+        ></ng-template>
+
+        <button
+            nz-button
+            nzType="default"
+            nz-popover
+            nzPopoverTitle="Advanced Filters"
+            [nzPopoverContent]="filterTemplate"
+            nzPopoverTrigger="click"
+            nzPopoverPlacement="bottomRight"
+            style="
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            "
+        >
+            <span nz-icon nzType="filter" nzTheme="outline"></span>
+            Filters
+        </button>
+    </div>
+
+    <ng-template #filterTemplate>
+        <div
+            style="
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                width: 240px;
+                padding: 4px 0;
+            "
+        >
+            <div>
+                <label
+                    style="
+                        display: block;
+                        margin-bottom: 4px;
+                        font-weight: 500;
+                        font-size: 13px;
+                    "
+                    >Status</label
+                >
+                <nz-select
+                    [(ngModel)]="selectedStatus"
+                    (ngModelChange)="loadAssets()"
+                    style="width: 100%"
+                >
+                    <nz-option nzValue="" nzLabel="All Status"></nz-option>
+                    <nz-option nzValue="Active" nzLabel="Active"></nz-option>
+                    <nz-option
+                        nzValue="Maintenance"
+                        nzLabel="Maintenance"
+                    ></nz-option>
+                    <nz-option
+                        nzValue="In Stock"
+                        nzLabel="In Stock"
+                    ></nz-option>
+                    <nz-option
+                        nzValue="Disposed"
+                        nzLabel="Disposed"
+                    ></nz-option>
+                </nz-select>
+            </div>
+            <div>
+                <label
+                    style="
+                        display: block;
+                        margin-bottom: 4px;
+                        font-weight: 500;
+                        font-size: 13px;
+                    "
+                    >Location</label
+                >
+                <nz-select
+                    [(ngModel)]="selectedLocation"
+                    (ngModelChange)="loadAssets()"
+                    style="width: 100%"
+                >
+                    <nz-option nzValue="" nzLabel="All Locations"></nz-option>
+                    <nz-option
+                        nzValue="Warehouse A"
+                        nzLabel="Warehouse A"
+                    ></nz-option>
+                    <nz-option
+                        nzValue="Warehouse B"
+                        nzLabel="Warehouse B"
+                    ></nz-option>
+                    <nz-option
+                        nzValue="IT Department"
+                        nzLabel="IT Department"
+                    ></nz-option>
+                </nz-select>
+            </div>
+        </div>
+    </ng-template>
+
+    <nz-table
+        #basicTable
+        [nzData]="assetList"
+        nzSize="middle"
+        style="background: white; border-radius: 8px; overflow: hidden"
+    >
+        <thead>
+            <tr>
+                <th>Asset ID</th>
+                <th>Asset Name</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Location</th>
+                <th>Assigned To</th>
+                <th>Purchase Date</th>
+                <th>Cost</th>
+                <th nzWidth="80px">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (data of basicTable.data; track data.id) {
+                <tr>
+                    <td style="font-weight: 500; color: #334155">
+                        {{ data.assetCode }}
+                    </td>
+                    <td>{{ data.name }}</td>
+                    <td>{{ data.category }}</td>
+                    <td>
+                        <nz-tag [nzColor]="getTagColor(data.status)">{{
+                            data.status
+                        }}</nz-tag>
+                    </td>
+                    <td>{{ data.location }}</td>
+                    <td>{{ data.assignedTo }}</td>
+                    <td>{{ data.purchaseDate }}</td>
+                    <td style="font-weight: 500">${{ data.cost | number }}</td>
+                    <td>
+                        <a
+                            nz-dropdown
+                            [nzDropdownMenu]="menu"
+                            nzTrigger="click"
+                        >
+                            <span
+                                nz-icon
+                                nzType="more"
+                                style="
+                                    font-size: 18px;
+                                    color: #64748b;
+                                    cursor: pointer;
+                                "
+                            ></span>
+                        </a>
+                        <nz-dropdown-menu #menu="nzDropdownMenu">
+                            <ul nz-menu>
+                                <li nz-menu-item (click)="openViewDrawer(data)">
+                                    <span
+                                        nz-icon
+                                        nzType="eye"
+                                        style="margin-right: 8px"
+                                    ></span>
+                                    View Details
+                                </li>
+
+                                <li nz-menu-divider></li>
+
+                                <li nz-menu-item (click)="openEditModal(data)">
+                                    <span
+                                        nz-icon
+                                        nzType="edit"
+                                        style="margin-right: 8px"
+                                    ></span>
+                                    Edit
+                                </li>
+
+                                <li nz-menu-divider></li>
+
+                                <li
+                                    nz-menu-item
+                                    nzDanger
+                                    nz-popconfirm
+                                    nzPopconfirmTitle="Are you sure you want to delete this asset?"
+                                    nzOkText="Delete"
+                                    nzCancelText="Cancel"
+                                    nzPopconfirmPlacement="left"
+                                    (nzOnConfirm)="deleteAsset(data.id!)"
+                                >
+                                    <span
+                                        nz-icon
+                                        nzType="delete"
+                                        style="margin-right: 8px"
+                                    ></span>
+                                    Delete
+                                </li>
+                            </ul>
+                        </nz-dropdown-menu>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </nz-table>
+
+    <nz-modal
+        [(nzVisible)]="isModalVisible"
+        [nzTitle]="modalTitle"
+        (nzOnCancel)="handleCancel()"
+        (nzOnOk)="handleSave()"
+    >
+        <ng-container *nzModalContent>
+            <form nz-form [formGroup]="assetForm" nzLayout="vertical">
+                <nz-form-item>
+                    <nz-form-label nzRequired>Asset Code</nz-form-label>
+                    <nz-form-control nzErrorTip="Please enter asset code!">
+                        <input
+                            nz-input
+                            formControlName="assetCode"
+                            placeholder="e.g., AST-10245"
+                            [disabled]="editingAssetId !== null"
+                        />
+                    </nz-form-control>
+                </nz-form-item>
+
+                <nz-form-item>
+                    <nz-form-label nzRequired>Asset Name</nz-form-label>
+                    <nz-form-control nzErrorTip="Please enter asset name!">
+                        <input
+                            nz-input
+                            formControlName="name"
+                            placeholder="e.g., Macbook Pro M3"
+                        />
+                    </nz-form-control>
+                </nz-form-item>
+
+                <div nz-row [nzGutter]="16">
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                            <nz-form-label nzRequired>Category</nz-form-label>
+                            <nz-form-control>
+                                <input
+                                    nz-input
+                                    formControlName="category"
+                                    placeholder="e.g., Electronics"
+                                />
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                            <nz-form-label nzRequired>Status</nz-form-label>
+                            <nz-form-control>
+                                <nz-select formControlName="status">
+                                    <nz-option
+                                        nzValue="Active"
+                                        nzLabel="Active"
+                                    ></nz-option>
+                                    <nz-option
+                                        nzValue="Maintenance"
+                                        nzLabel="Maintenance"
+                                    ></nz-option>
+                                    <nz-option
+                                        nzValue="In Stock"
+                                        nzLabel="In Stock"
+                                    ></nz-option>
+                                    <nz-option
+                                        nzValue="Disposed"
+                                        nzLabel="Disposed"
+                                    ></nz-option>
+                                </nz-select>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+                </div>
+
+                <nz-form-item>
+                    <nz-form-label nzRequired>Location</nz-form-label>
+                    <nz-form-control>
+                        <input
+                            nz-input
+                            formControlName="location"
+                            placeholder="e.g., Warehouse A"
+                        />
+                    </nz-form-control>
+                </nz-form-item>
+
+                <nz-form-item>
+                    <nz-form-label nzRequired>Assigned To</nz-form-label>
+                    <nz-form-control>
+                        <input
+                            nz-input
+                            formControlName="assignedTo"
+                            placeholder="e.g., John Doe"
+                        />
+                    </nz-form-control>
+                </nz-form-item>
+
+                <div nz-row [nzGutter]="16">
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                            <nz-form-label nzRequired
+                                >Purchase Date</nz-form-label
+                            >
+                            <nz-form-control>
+                                <nz-date-picker
+                                    formControlName="purchaseDate"
+                                    style="width: 100%"
+                                ></nz-date-picker>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                            <nz-form-label nzRequired>Cost ($)</nz-form-label>
+                            <nz-form-control>
+                                <input
+                                    nz-input
+                                    type="number"
+                                    formControlName="cost"
+                                />
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+                </div>
+            </form>
+        </ng-container>
+    </nz-modal>
+</div>
+
+<nz-drawer
+    [nzVisible]="isViewDrawerVisible"
+    nzPlacement="right"
+    [nzWidth]="450"
+    nzTitle="Asset Information Details"
+    (nzOnClose)="closeViewDrawer()"
+>
+    <ng-container *nzDrawerContent>
+        <div style="display: flex; flex-direction: column; gap: 16px">
+            <p><strong>Asset Code:</strong> {{ selectedAsset?.assetCode }}</p>
+            <p><strong>Asset Name:</strong> {{ selectedAsset?.name }}</p>
+        </div>
+    </ng-container>
+</nz-drawer>

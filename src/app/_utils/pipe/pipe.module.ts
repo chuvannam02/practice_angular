@@ -6,10 +6,11 @@
  * @File: pipe.module.ts
  */
 import {NgModule} from '@angular/core';
+import {HighlightPipe} from './highlight.pipe';
 
 @NgModule({
-    imports: [],
-    exports: []
+    imports: [HighlightPipe],
+    exports: [HighlightPipe]
 })
 export class PipeModule {
 }

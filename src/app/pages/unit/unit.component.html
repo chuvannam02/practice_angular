@@ -1,1 +1,138 @@
-<p>unit works!</p>
+<div style="padding: 20px;">
+    <h2>Danh sách bài học</h2>
+
+    <ul>
+        <li *ngFor="let item of items; trackBy: trackById" style="margin-bottom: 10px;">
+<!--        <li *ngFor="let item of items" style="margin-bottom: 10px;">-->
+            <strong>{{ item.name }}</strong>
+            <input type="text" placeholder="Gõ thử vào đây...">
+        </li>
+    </ul>
+
+    <button (click)="refreshList()" style="padding: 10px 20px; cursor: pointer;">
+        Cập nhật danh sách (Refresh)
+    </button>
+
+    <p style="color: gray; font-size: 0.9em; margin-top: 15px;">
+        * <strong>Mẹo:</strong> Gõ nội dung vào ô input số 1, 2... rồi nhấn nút.
+        Nếu dùng <code>trackBy</code>, nội dung bạn gõ sẽ giữ nguyên.
+        Nếu bỏ <code>trackBy</code>, ô input sẽ bị xóa sạch (vì DOM bị tạo mới).
+    </p>
+</div>
+
+<div class="search-container">
+    <input type="text" aria-label="Tìm kiếm nội dung" (input)="onSearch($event)" placeholder="Tìm kiếm...">
+
+    <div *ngIf="searchResults$ | async as results; else loading">
+        <p>Tìm thấy <strong>{{ results.length }}</strong> kết quả (DOM chỉ chứa ~10 dòng)</p>
+
+        <cdk-virtual-scroll-viewport itemSize="50" class="viewport">
+            <div *cdkVirtualFor="let p of results" class="item">
+                <span [innerHTML]="p.name | highlight:searchTerm"></span> -
+                <strong>{{ p.code }}</strong>
+                <small>{{ p.price | number }}đ</small>
+            </div>
+        </cdk-virtual-scroll-viewport>
+    </div>
+
+    <ng-template #loading>
+        <div class="loader">Đang tải...</div>
+    </ng-template>
+</div>
+<div *ngIf="query.isLoading()" class="loading-container">
+    <nz-spin nzSimple nzTip="Đang tải dữ liệu lần đầu..."></nz-spin>
+</div>
+
+<div *ngIf="query.isError()" style="color: red; margin-bottom: 10px;">
+    <strong>Lỗi:</strong> {{ (query.error()).message }}
+</div>
+
+<div *ngIf="query.isFetching() && !query.isLoading()" style="color: #1890ff;">
+    <i nz-icon nzType="sync" nzSpin></i> Đang làm mới dữ liệu...
+</div>
+
+<nz-table
+    #basicTable
+    [nzData]="query.data() || []"
+    [nzFrontPagination]="false"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    nzShowSizeChanger
+    [nzPageSizeOptions]="[5, 10, 20, 50, 100]"
+    [nzTotal]="100"
+    [nzLoading]="query.isLoading()"
+    (nzPageIndexChange)="onPageIndexChange($event)"
+    (nzPageSizeChange)="onPageSizeChange($event)"
+>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Tên người dùng</th>
+        <th>Email</th>
+        <th>Công ty</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let user of query.data()">
+        <td>{{ user.id }}</td>
+        <td><strong>{{ user.name }}</strong></td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.company?.name }}</td>
+    </tr>
+    </tbody>
+</nz-table>
+
+<div></div>
+
+<nz-select
+    style="width: 100%;"
+    [(ngModel)]="selectedUser"
+    (nzScrollToBottom)="loadMore()"
+    [nzPlaceHolder]="'Select users (' + optionList.length + ' loaded)'"
+    nzAllowClear
+    (nzOpenChange)="onOpen($event)"
+    nzServerSearch="true"
+    nzShowSearch
+    [nzLoading]="isLoading"
+    [nzDropdownRender]="renderTemplate"
+>
+    @for (item of optionList; track item.login.uuid) {
+        <nz-option
+            [nzValue]="item.login.uuid"
+            [nzLabel]="item.name.first + ' ' + item.name.last">
+        </nz-option>
+    }
+</nz-select>
+
+<ng-template #renderTemplate>
+    @if (isLoading) {
+        <div style="padding: 8px; text-align: center;">
+            <nz-spin nzSimple></nz-spin> Loading...
+        </div>
+    }
+</ng-template>
+
+<div class="form-container">
+    <h2>Create New Menu</h2>
+
+    <div class="form-group">
+        <label>Menu Label:</label>
+        <input type="text" placeholder="Enter menu name" class="ant-input" />
+    </div>
+
+    <div class="form-group">
+        <label>Menu Icon:</label>
+
+        <div class="icon-selection-area">
+            <app-icon-picker (iconSelected)="onIconSaved($event)"></app-icon-picker>
+
+            <div class="preview-box" *ngIf="selectedIconName">
+                <span>Selected: </span>
+                <ng-icon [name]="selectedIconName" size="24px" color="#3b82f6"></ng-icon>
+                <small>{{ selectedIconName }}</small>
+            </div>
+        </div>
+    </div>
+
+    <button (click)="saveMenuToDb()" class="btn-save">Save Menu</button>
+</div>

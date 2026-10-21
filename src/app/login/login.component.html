@@ -1,0 +1,73 @@
+<div class="login-container">
+    <nz-card nzTitle="Đăng nhập">
+        <form nz-form [formGroup]="form" (ngSubmit)="submit()" nzLayout="vertical" appAutofocusFirst>
+
+            <nz-form-item>
+                <nz-form-control nzErrorTip="Vui lòng nhập đúng định dạng Email!">
+                    <nz-input-group [nzPrefix]="prefixTemplateUser" [nzSuffix]="emailClearTpl">
+                        <input nz-input formControlName="email" placeholder="Email" #emailInput />
+                    </nz-input-group>
+
+                    <ng-template #prefixTemplateUser>
+                        <span nz-icon nzType="user"></span>
+                    </ng-template>
+
+                    <ng-template #emailClearTpl>
+                        @if (form.get('email')?.value) {
+                            <span
+                                nz-icon
+                                class="ant-input-clear-icon"
+                                nzTheme="fill"
+                                nzType="close-circle"
+                                (click)="form.get('email')?.setValue('')"
+                            ></span>
+                        }
+                    </ng-template>
+                </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+                <nz-form-control nzErrorTip="Vui lòng nhập mật khẩu (tối thiểu 6 ký tự)!">
+                    <nz-input-group [nzPrefix]="prefixTemplateLock" [nzSuffix]="passwordCombinedSuffix">
+                        <input
+                            nz-input
+                            formControlName="password"
+                            placeholder="Mật khẩu"
+                            [type]="passwordVisible ? 'text' : 'password'"
+                        />
+                    </nz-input-group>
+
+                    <ng-template #prefixTemplateLock>
+                        <span nz-icon nzType="lock"></span>
+                    </ng-template>
+
+                    <ng-template #passwordCombinedSuffix>
+                        <div class="suffix-wrapper" style="display: flex; align-items: center; gap: 8px;">
+                            @if (form.get('password')?.value) {
+                                <span
+                                    nz-icon
+                                    class="ant-input-clear-icon"
+                                    nzTheme="fill"
+                                    nzType="close-circle"
+                                    (click)="form.get('password')?.setValue('')"
+                                ></span>
+                            }
+                            <span
+                                nz-icon
+                                [nzType]="passwordVisible ? 'eye-invisible' : 'eye'"
+                                (click)="passwordVisible = !passwordVisible"
+                                style="cursor: pointer;"
+                            ></span>
+                        </div>
+                    </ng-template>
+                </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+                <button nz-button nzType="primary" [nzLoading]="loading" style="width: 100%">
+                    Đăng nhập
+                </button>
+            </nz-form-item>
+        </form>
+    </nz-card>
+</div>

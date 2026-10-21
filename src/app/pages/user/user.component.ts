@@ -29,7 +29,11 @@ export class UserComponent implements OnInit {
     // }
 
     ngOnInit() {
-        this.form = buildFormFromZod(this.fb, userSchema);
+        try {
+            this.form = buildFormFromZod(this.fb, userSchema);
+        } catch (e) {
+            console.error("Zod helper error:", e);
+        }
     }
 
     // Helper check lỗi cho gọn template

@@ -5,7 +5,7 @@ import {NzModalRef} from 'ng-zorro-antd/modal';
 import {FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TrimDirective} from '../../../_utils/directive/trim.directive';
 import {HttpClient} from '@angular/common/http';
-import {catchError, delay, Observable, of, tap} from 'rxjs';
+import {catchError, delay, firstValueFrom, Observable, of, tap} from 'rxjs';
 import {ApiService} from '../../../_utils/common/services/api.service';
 import {AsyncPipe} from '@angular/common';
 import {ApiResponse, ApiResponseClass} from '../../../_utils/Response.model';
@@ -14,15 +14,15 @@ import {map} from 'rxjs/operators';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-list-category',
+    selector: 'app-list-category',
     imports: [
         FormsModule,
         ReactiveFormsModule,
         TrimDirective,
         AsyncPipe
     ],
-  templateUrl: './list-category.component.html',
-  styleUrl: './list-category.component.scss'
+    templateUrl: './list-category.component.html',
+    styleUrl: './list-category.component.scss'
 })
 export class ListCategoryComponent extends BaseListComponent<ICategoryOptional> {
     posts: any[] | null = [];
@@ -79,18 +79,20 @@ export class ListCategoryComponent extends BaseListComponent<ICategoryOptional> 
         console.log('🚀 CLIENT: Bắt đầu gọi API JSONPlaceholder...');
 
         // 1. Tạo Observable gọi API thật
-        const request$ = this.http.get<any[]>('https://jsonplaceholder.typicode.com/photos').pipe(
-            // QUAN TRỌNG: Giả lập mạng lag 3 giây để bạn kịp chuyển trang
-            delay(3000),
+        const request$ = this.http.get<any[]>('https://jsonplaceholder.typicode.com/photos')
+            .pipe(takeUntilDestroyed()) // Tự động hủy khi component destroy
+            .pipe(
+                // QUAN TRỌNG: Giả lập mạng lag 3 giây để bạn kịp chuyển trang
+                // delay(3000),
 
-            // Log này chỉ hiện nếu API chạy xong (không bị huỷ)
-            tap(() => console.log('🔥 SERVER: Đã tải xong data từ JSONPlaceholder!'))
-        );
+                // Log này chỉ hiện nếu API chạy xong (không bị huỷ)
+                tap(() => console.log('🔥 SERVER: Đã tải xong data từ JSONPlaceholder!'))
+            );
 
         try {
             // 2. Gọi qua hàm xử lý của BaseComponent
             // Nếu component bị destroy trong 3 giây chờ, hàm này sẽ ngắt request
-            const data = await this.firstValueFromUntilDestroyed(request$);
+            const data = await firstValueFrom(request$);
 
             // 3. Nếu không bị huỷ thì code xuống đây
             this.data = data.slice(0, 10); // Lấy 10 dòng đầu demo

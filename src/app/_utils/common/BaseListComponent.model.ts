@@ -22,6 +22,7 @@ export abstract class BaseListComponent<T> extends BaseComponent {
     total = 0;
     pageSizeOptions: number[] = [10, 20, 50, 100];
 
+    // Chỉ class nào extends mới sử dụng được
     protected readonly fb: FormBuilder = inject(FormBuilder);
     protected readonly notification: AlertService = inject(AlertService);
     protected readonly viewContainerRef = inject(ViewContainerRef);
